@@ -33,7 +33,7 @@ export default function Home() {
   const activeWorld = WORLDS[currentWorldId] || WORLDS.hemgarden;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-sky-100 via-emerald-50/60 to-emerald-100 flex flex-col justify-between p-3 sm:p-6">
+    <div className="min-h-screen bg-gradient-to-b from-sky-100 via-emerald-50/60 to-emerald-100 flex flex-col justify-between p-1.5 sm:p-3">
       {/* Playful Floating Background Elements */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10 opacity-30">
         <div className="absolute top-8 left-8 text-5xl sm:text-6xl animate-pulse">

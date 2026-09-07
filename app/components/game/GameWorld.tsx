@@ -213,27 +213,27 @@ export default function GameWorld({
   }, [checkCollision, checkInteractables]);
 
   return (
-    <div className="w-full max-w-4xl mx-auto flex flex-col items-center select-none">
+    <div className="w-full max-w-5xl mx-auto flex flex-col items-center select-none">
       {/* Top HUD */}
-      <div className="w-full mb-3">
+      <div className="w-full mb-2 sm:mb-2.5">
         <HUD world={world} stars={stars} coins={coins} />
       </div>
 
-      {/* Game Viewport Canvas/Container */}
+      {/* Game Viewport Canvas/Container with Handcrafted Timber Frame */}
       <div
-        style={{ width: "100%", maxWidth: "800px", aspectRatio: "800 / 600" }}
-        className="relative overflow-hidden rounded-3xl border-4 border-slate-700 shadow-2xl bg-emerald-700"
+        style={{ width: "100%", maxWidth: "880px", aspectRatio: "800 / 600" }}
+        className="relative overflow-hidden rounded-3xl border-4 sm:border-6 border-amber-950/90 shadow-2xl bg-emerald-800 ring-4 ring-amber-900/30"
       >
-        {/* World Floor Background */}
+        {/* Rich World Floor Background with Textured Pixel Grass */}
         <div
           className={`absolute inset-0 ${world.groundBgClass}`}
           style={{
-            backgroundImage: `radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px)`,
-            backgroundSize: "24px 24px",
+            backgroundImage: `radial-gradient(circle, rgba(255,255,255,0.09) 1.5px, transparent 1.5px), radial-gradient(circle, rgba(0,0,0,0.06) 1px, transparent 1px)`,
+            backgroundSize: "20px 20px, 40px 40px",
           }}
         />
 
-        {/* Paths */}
+        {/* Natural Paths with Soft Earth Tones and Texture */}
         {world.paths.map((p, idx) => (
           <div
             key={idx}
@@ -243,14 +243,23 @@ export default function GameWorld({
               width: `${(p.width / world.width) * 100}%`,
               height: `${(p.height / world.height) * 100}%`,
             }}
-            className={`absolute rounded-xl ${
+            className={`absolute rounded-2xl ${
               p.type === "stone"
-                ? "bg-slate-300 border-2 border-slate-400 shadow-inner"
+                ? "bg-stone-300 border-2 border-stone-400/90 shadow-inner"
                 : p.type === "sand"
-                ? "bg-amber-200 border-2 border-amber-300"
-                : "bg-amber-300/80 border-2 border-amber-400/90"
+                ? "bg-amber-200 border-2 border-amber-300/90"
+                : "bg-[#b07848] border-2 border-[#834f26] shadow-inner"
             }`}
-          />
+          >
+            {/* Subtle path stepping details */}
+            {p.type === "dirt" && (
+              <div className="w-full h-full opacity-25 flex items-center justify-around pointer-events-none text-[10px]">
+                <span>•</span>
+                <span>•</span>
+                <span>•</span>
+              </div>
+            )}
+          </div>
         ))}
 
         {/* Scenery Objects */}
@@ -261,36 +270,69 @@ export default function GameWorld({
           const height = `${(item.height / world.height) * 100}%`;
 
           if (item.type === "house") {
-            // Player's Cottage
+            // Detailed Cozy Player Cottage
             return (
               <div
                 key={item.id}
                 style={{ left, top, width, height }}
-                className="absolute z-10 flex flex-col items-center pointer-events-none"
+                className="absolute z-10 flex flex-col items-center pointer-events-none filter drop-shadow-md"
               >
                 {/* Chimney smoke */}
-                <div className="absolute -top-3 right-6 text-xs animate-bounce opacity-80">
+                <div className="absolute -top-4 right-7 text-xs animate-bounce opacity-80">
                   💨
                 </div>
-                {/* Cottage Roof */}
-                <div className="w-full h-1/2 bg-amber-700 rounded-t-2xl border-2 border-amber-900 flex items-center justify-center relative shadow-md">
-                  <div className="absolute -top-2 right-4 w-4 h-5 bg-amber-900 rounded-t-sm" />
-                  <span className="text-white text-xs font-bold tracking-wider">
+
+                {/* Shingle Roof */}
+                <div className="w-full h-[52%] bg-gradient-to-b from-amber-700 via-amber-800 to-amber-900 rounded-t-2xl border-2 border-amber-950 flex flex-col items-center justify-center relative shadow-md overflow-hidden">
+                  {/* Chimney */}
+                  <div className="absolute -top-1 right-5 w-4 h-6 bg-stone-700 rounded-t-xs border border-stone-900 shadow-inner" />
+                  {/* Roof Shingle Texture Rows */}
+                  <div className="w-full border-b border-amber-950/40 my-0.5" />
+                  <div className="w-full border-b border-amber-950/40 my-0.5" />
+                  <span className="text-amber-100 text-[11px] font-black tracking-wider uppercase drop-shadow z-10">
                     {item.label}
                   </span>
                 </div>
-                {/* Cottage Walls */}
-                <div className="w-full h-1/2 bg-amber-100 border-2 border-t-0 border-amber-800 rounded-b-lg flex items-end justify-around px-2 pb-1 shadow-inner relative">
-                  {/* Glowing Window */}
-                  <div className="w-6 h-6 bg-yellow-300 border border-amber-800 rounded shadow-sm animate-pulse flex items-center justify-center text-[10px]">
-                    🪟
+
+                {/* Timber Walls & Porch */}
+                <div className="w-full h-[48%] bg-amber-100 border-2 border-t-0 border-amber-900 rounded-b-lg flex items-end justify-between px-3 pb-1 shadow-inner relative">
+                  {/* Stone foundation strip */}
+                  <div className="absolute bottom-0 inset-x-0 h-1.5 bg-stone-500 rounded-b-xs border-t border-stone-600" />
+
+                  {/* Window with Flower Box */}
+                  <div className="relative flex flex-col items-center mb-1">
+                    <div className="w-7 h-7 bg-yellow-200 border-2 border-amber-900 rounded shadow-sm flex items-center justify-center relative overflow-hidden">
+                      <div className="w-full h-0.5 bg-amber-900/60" />
+                      <div className="h-full w-0.5 bg-amber-900/60 absolute" />
+                    </div>
+                    {/* Flower Box */}
+                    <div className="w-8 h-2 bg-amber-800 rounded-b-xs border border-amber-950 text-[8px] flex justify-around items-center -mt-0.5">
+                      <span>🌸</span>
+                      <span>🌼</span>
+                    </div>
                   </div>
-                  {/* Door */}
-                  <div className="w-7 h-10 bg-amber-800 border border-amber-950 rounded-t-md flex items-center justify-center">
-                    <div className="w-1 h-1 bg-yellow-300 rounded-full ml-auto mr-1" />
+
+                  {/* Cozy Wooden Door with Porch Step */}
+                  <div className="relative flex flex-col items-center">
+                    <div className="w-8 h-11 bg-amber-800 border-2 border-amber-950 rounded-t-md flex items-center justify-between px-1 shadow-inner">
+                      <div className="w-1.5 h-1.5 bg-yellow-300 rounded-full ml-auto shadow-xs" />
+                    </div>
+                    {/* Porch Welcome Step */}
+                    <div className="w-10 h-2 bg-amber-900 rounded-sm border border-amber-950 -mt-0.5 shadow-xs" />
                   </div>
-                  {/* Flower pot */}
-                  <div className="text-sm">🪴</div>
+
+                  {/* Second Window with Flower Box */}
+                  <div className="relative flex flex-col items-center mb-1">
+                    <div className="w-7 h-7 bg-yellow-200 border-2 border-amber-900 rounded shadow-sm flex items-center justify-center relative overflow-hidden">
+                      <div className="w-full h-0.5 bg-amber-900/60" />
+                      <div className="h-full w-0.5 bg-amber-900/60 absolute" />
+                    </div>
+                    {/* Flower Box */}
+                    <div className="w-8 h-2 bg-amber-800 rounded-b-xs border border-amber-950 text-[8px] flex justify-around items-center -mt-0.5">
+                      <span>🌷</span>
+                      <span>🌸</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             );
@@ -325,16 +367,38 @@ export default function GameWorld({
           }
 
           if (item.type === "tree") {
+            const isBlossom = item.color === "pink";
             return (
               <div
                 key={item.id}
                 style={{ left, top, width, height }}
-                className="absolute z-10 flex flex-col items-center pointer-events-none"
+                className="absolute z-10 flex flex-col items-center pointer-events-none filter drop-shadow-md"
               >
-                <div className="w-full h-4/5 bg-emerald-800 rounded-full border-2 border-emerald-950 shadow-md flex items-center justify-center text-xl">
-                  🌲
+                {/* Tree Foliage Canopy */}
+                <div
+                  className={`w-full h-[78%] rounded-3xl border-2 flex items-center justify-center relative overflow-hidden shadow-md ${
+                    isBlossom
+                      ? "bg-gradient-to-b from-pink-300 via-pink-400 to-rose-400 border-pink-600 ring-2 ring-pink-200/50"
+                      : "bg-gradient-to-b from-emerald-600 via-emerald-700 to-emerald-900 border-emerald-950"
+                  }`}
+                >
+                  {/* Foliage Highlights & Leaf clusters */}
+                  <div
+                    className={`absolute -top-1 -left-1 w-1/2 h-1/2 rounded-full opacity-60 ${
+                      isBlossom ? "bg-pink-100" : "bg-emerald-400"
+                    }`}
+                  />
+                  <div
+                    className={`absolute top-2 right-2 w-1/3 h-1/3 rounded-full opacity-50 ${
+                      isBlossom ? "bg-pink-200" : "bg-emerald-500"
+                    }`}
+                  />
+                  <span className="text-2xl sm:text-3xl z-10 drop-shadow">
+                    {isBlossom ? "🌸" : "🌲"}
+                  </span>
                 </div>
-                <div className="w-2.5 h-1/5 bg-amber-900 rounded-sm" />
+                {/* Wooden Trunk & Roots */}
+                <div className="w-3 h-[22%] bg-gradient-to-b from-amber-900 to-amber-950 rounded-b-xs border-x border-amber-950" />
               </div>
             );
           }
@@ -344,9 +408,12 @@ export default function GameWorld({
               <div
                 key={item.id}
                 style={{ left, top, width, height }}
-                className="absolute z-10 text-2xl flex items-center justify-center pointer-events-none"
+                className="absolute z-10 flex items-center justify-center pointer-events-none filter drop-shadow-xs"
               >
-                🌳
+                <div className="w-full h-full bg-emerald-700 border-2 border-emerald-950 rounded-full flex items-center justify-around px-1 shadow-inner">
+                  <span className="text-xs">🍓</span>
+                  <span className="text-xs">🌿</span>
+                </div>
               </div>
             );
           }
@@ -356,7 +423,8 @@ export default function GameWorld({
               <div
                 key={item.id}
                 style={{ left, top, width, height }}
-                className="absolute z-10 text-lg flex items-center justify-center pointer-events-none"
+                className="absolute z-10 text-lg flex items-center justify-center pointer-events-none animate-pulse"
+                style-prop={{ animationDuration: "3s" }}
               >
                 {item.customIcon || "🌸"}
               </div>
@@ -368,10 +436,10 @@ export default function GameWorld({
               <div
                 key={item.id}
                 style={{ left, top, width, height }}
-                className="absolute z-10 bg-amber-800/90 border border-amber-950 rounded-xs flex items-center justify-around overflow-hidden shadow-xs pointer-events-none"
+                className="absolute z-10 bg-amber-900/90 border-2 border-amber-950 rounded-xs flex items-center justify-around overflow-hidden shadow-xs pointer-events-none"
               >
-                <div className="w-1.5 h-full bg-amber-950/40" />
-                <div className="w-1.5 h-full bg-amber-950/40" />
+                <div className="w-2 h-full bg-amber-950 border-r border-amber-800" />
+                <div className="w-2 h-full bg-amber-950 border-r border-amber-800" />
               </div>
             );
           }
@@ -381,15 +449,16 @@ export default function GameWorld({
               <div
                 key={item.id}
                 style={{ left, top, width, height }}
-                className="absolute z-10 bg-amber-950/85 border-2 border-amber-900/90 rounded-md p-1 flex flex-col justify-around items-center shadow-inner pointer-events-none"
+                className="absolute z-10 bg-[#3d2415] border-2 border-[#26150b] rounded-lg p-1.5 flex flex-col justify-around items-center shadow-inner pointer-events-none"
               >
-                <div className="flex justify-around w-full text-sm sm:text-base">
-                  <span>{item.customIcon || "🌱"}</span>
-                  <span>{item.customIcon || "🌱"}</span>
+                {/* Furrowed Earth Rows */}
+                <div className="flex justify-around w-full border-b border-black/20 pb-0.5 text-sm sm:text-base">
+                  <span className="drop-shadow-xs">{item.customIcon || "🌱"}</span>
+                  <span className="drop-shadow-xs">{item.customIcon || "🌱"}</span>
                 </div>
-                <div className="flex justify-around w-full text-sm sm:text-base">
-                  <span>{item.customIcon || "🌱"}</span>
-                  <span>{item.customIcon || "🌱"}</span>
+                <div className="flex justify-around w-full pt-0.5 text-sm sm:text-base">
+                  <span className="drop-shadow-xs">{item.customIcon || "🌱"}</span>
+                  <span className="drop-shadow-xs">{item.customIcon || "🌱"}</span>
                 </div>
               </div>
             );
@@ -400,10 +469,14 @@ export default function GameWorld({
               <div
                 key={item.id}
                 style={{ left, top, width, height }}
-                className="absolute z-10 flex flex-col items-center justify-center pointer-events-none"
+                className="absolute z-10 flex flex-col items-center justify-center pointer-events-none filter drop-shadow-md"
               >
-                <div className="w-full h-3 bg-amber-800 rounded-t border border-amber-950 shadow-xs" />
-                <div className="w-4/5 h-6 bg-slate-400 rounded-b-md border-2 border-slate-600 shadow-inner flex items-center justify-center text-xs">
+                {/* Well Roof */}
+                <div className="w-full h-4 bg-amber-800 rounded-t-md border-2 border-amber-950 flex items-center justify-center text-[9px] text-amber-200 font-bold shadow-xs">
+                  BRUNN
+                </div>
+                {/* Stone Base & Bucket */}
+                <div className="w-[88%] h-7 bg-stone-500 rounded-b-md border-2 border-stone-800 shadow-inner flex items-center justify-center text-xs">
                   🪣
                 </div>
               </div>
@@ -415,7 +488,7 @@ export default function GameWorld({
               <div
                 key={item.id}
                 style={{ left, top, width, height }}
-                className="absolute z-10 flex items-center justify-center pointer-events-none text-2xl"
+                className="absolute z-10 flex flex-col items-center justify-center pointer-events-none text-2xl filter drop-shadow-sm"
               >
                 📮
               </div>
@@ -560,7 +633,7 @@ export default function GameWorld({
               <div
                 key={item.id}
                 style={{ left, top, width, height }}
-                className="absolute z-10 flex items-center justify-center pointer-events-none text-2xl"
+                className="absolute z-10 flex items-center justify-center pointer-events-none text-2xl filter drop-shadow-xs"
               >
                 {item.customIcon || "🪨"}
               </div>
@@ -572,7 +645,7 @@ export default function GameWorld({
               <div
                 key={item.id}
                 style={{ left, top, width, height }}
-                className="absolute z-10 flex items-center justify-center pointer-events-none text-2xl"
+                className="absolute z-10 flex items-center justify-center pointer-events-none text-2xl filter drop-shadow-xs"
               >
                 {item.customIcon || "🪧"}
               </div>
@@ -580,6 +653,67 @@ export default function GameWorld({
           }
 
           if (item.type === "deco") {
+            // Specialized environmental props
+            if (item.customIcon === "pond") {
+              // Mini Lilypad Pond
+              return (
+                <div
+                  key={item.id}
+                  style={{ left, top, width, height }}
+                  className="absolute z-10 bg-sky-600/90 border-3 border-stone-600 rounded-full flex items-center justify-around shadow-inner pointer-events-none overflow-hidden"
+                >
+                  <span className="text-xs animate-pulse">🪷</span>
+                  <span className="text-xs">🌾</span>
+                  <span className="text-[10px]">💧</span>
+                </div>
+              );
+            }
+
+            if (item.customIcon === "bench") {
+              // Wooden Garden Bench
+              return (
+                <div
+                  key={item.id}
+                  style={{ left, top, width, height }}
+                  className="absolute z-10 bg-amber-800 border-2 border-amber-950 rounded-sm flex flex-col justify-around py-0.5 shadow-sm pointer-events-none"
+                >
+                  <div className="w-full h-1 bg-amber-700 border-b border-amber-950" />
+                  <div className="w-full h-1 bg-amber-700" />
+                </div>
+              );
+            }
+
+            if (item.customIcon === "lantern") {
+              // Rustic Lantern Post
+              return (
+                <div
+                  key={item.id}
+                  style={{ left, top, width, height }}
+                  className="absolute z-10 flex flex-col items-center justify-end pointer-events-none filter drop-shadow"
+                >
+                  <div className="w-4 h-4 bg-yellow-300 rounded-full border border-amber-900 flex items-center justify-center text-[10px] animate-pulse shadow-yellow-300/80 shadow-md">
+                    🕯️
+                  </div>
+                  <div className="w-1.5 h-6 bg-stone-700 rounded-b-xs" />
+                </div>
+              );
+            }
+
+            if (item.customIcon === "barrel") {
+              // Wooden Barrel
+              return (
+                <div
+                  key={item.id}
+                  style={{ left, top, width, height }}
+                  className="absolute z-10 bg-amber-900 border-2 border-amber-950 rounded-sm flex flex-col justify-around py-0.5 shadow-sm pointer-events-none text-[10px] items-center text-amber-200"
+                >
+                  <div className="w-full h-0.5 bg-stone-700" />
+                  <span>🪵</span>
+                  <div className="w-full h-0.5 bg-stone-700" />
+                </div>
+              );
+            }
+
             return (
               <div
                 key={item.id}
@@ -594,43 +728,46 @@ export default function GameWorld({
           return null;
         })}
 
-        {/* Portals */}
+        {/* Handcrafted Stone-Framed Portals */}
         {world.interactables
           .filter((i) => i.type === "portal")
           .map((portal) => {
-            const left = `${((portal.x - 30) / world.width) * 100}%`;
-            const top = `${((portal.y - 30) / world.height) * 100}%`;
+            const left = `${((portal.x - 36) / world.width) * 100}%`;
+            const top = `${((portal.y - 36) / world.height) * 100}%`;
 
-            const colorClasses =
-              portal.portalColor === "blue"
-                ? "bg-blue-500/30 border-blue-400 shadow-blue-400/80 text-blue-200"
-                : portal.portalColor === "green"
-                ? "bg-emerald-500/30 border-emerald-400 shadow-emerald-400/80 text-emerald-200"
-                : "bg-amber-500/30 border-amber-400 shadow-amber-400/80 text-amber-200";
+            const isBlue = portal.portalColor === "blue";
+            const isGreen = portal.portalColor === "green";
+
+            const ringClasses = isBlue
+              ? "border-sky-400 bg-sky-600/30 shadow-sky-400/90"
+              : isGreen
+              ? "border-emerald-400 bg-emerald-600/30 shadow-emerald-400/90"
+              : "border-amber-400 bg-amber-600/30 shadow-amber-400/90";
 
             return (
               <div
                 key={portal.id}
-                style={{ left, top, width: "60px", height: "60px" }}
-                className="absolute z-10 flex flex-col items-center justify-center pointer-events-none"
+                style={{ left, top, width: "72px", height: "72px" }}
+                className="absolute z-10 flex flex-col items-center justify-center pointer-events-none select-none filter drop-shadow-lg"
               >
-                {/* Pulsing Swirl Ring */}
+                {/* Ancient Stone Portal Arch Frame */}
+                <div className="absolute inset-0 rounded-full border-4 border-stone-600/90 bg-stone-800/40 pointer-events-none" />
+
+                {/* Swirling Magical Energy Vortex */}
                 <div
-                  className={`w-14 h-14 rounded-full border-4 ${colorClasses} shadow-lg animate-spin flex items-center justify-center backdrop-blur-xs`}
-                  style={{ animationDuration: "5s" }}
+                  className={`w-14 h-14 rounded-full border-4 ${ringClasses} shadow-xl animate-spin flex items-center justify-center backdrop-blur-xs`}
+                  style={{ animationDuration: "6s" }}
                 >
-                  <div className="w-8 h-8 rounded-full border-2 border-dashed border-white/60 animate-reverse-spin" />
+                  <div className="w-8 h-8 rounded-full border-2 border-dashed border-white/70 animate-reverse-spin" />
                 </div>
-                {/* Portal Icon */}
-                <div className="absolute text-xl animate-pulse">
-                  {portal.portalColor === "blue"
-                    ? "🌌"
-                    : portal.portalColor === "green"
-                    ? "🌀"
-                    : "✨"}
+
+                {/* Center Core Sparkle & Rune */}
+                <div className="absolute text-xl animate-pulse drop-shadow">
+                  {isBlue ? "🌌" : isGreen ? "🍃" : "✨"}
                 </div>
-                {/* Label */}
-                <div className="absolute -bottom-6 px-2 py-0.5 bg-black/60 rounded-md text-[10px] sm:text-xs font-black text-white whitespace-nowrap shadow-sm border border-white/20">
+
+                {/* Portal Wooden Label Plaque */}
+                <div className="absolute -bottom-6 px-2.5 py-0.5 bg-amber-950/90 rounded-md text-[10px] sm:text-xs font-black text-amber-200 whitespace-nowrap shadow-md border border-amber-700">
                   {portal.label}
                 </div>
               </div>

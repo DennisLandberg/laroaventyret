@@ -111,13 +111,15 @@ export const WORLDS: Record<WorldId, WorldConfig> = {
 
       // Natural perimeter tree border
       { id: "tree_t1", type: "tree", x: 35, y: 40, width: 55, height: 65 },
-      { id: "tree_t2", type: "tree", x: 550, y: 40, width: 55, height: 65 },
+      // Charming Pink Flowering Blossom Tree! 🌸
+      { id: "tree_blossom", type: "tree", color: "pink", x: 535, y: 40, width: 65, height: 75, label: "Körsbärsträd" },
       { id: "tree_t3", type: "tree", x: 650, y: 40, width: 55, height: 65 },
 
-      // Left edge trees
+      // Left edge trees & mini lilypad pond
       { id: "tree_l1", type: "tree", x: 35, y: 200, width: 55, height: 65 },
-      { id: "tree_l2", type: "tree", x: 35, y: 340, width: 55, height: 65 },
-      { id: "tree_l3", type: "tree", x: 35, y: 480, width: 55, height: 65 },
+      { id: "tree_l2", type: "tree", x: 35, y: 330, width: 55, height: 65 },
+      { id: "mini_pond", type: "deco", x: 50, y: 420, width: 60, height: 45, customIcon: "pond" },
+      { id: "tree_l3", type: "tree", x: 35, y: 490, width: 55, height: 65 },
 
       // Bottom edge trees & bushes
       { id: "tree_b1", type: "tree", x: 150, y: 500, width: 55, height: 65 },
@@ -127,17 +129,25 @@ export const WORLDS: Record<WorldId, WorldConfig> = {
 
       // Bushes and flowers around cottage and garden
       { id: "bush_1", type: "bush", x: 80, y: 130, width: 34, height: 34 },
+      { id: "barrel_porch", type: "deco", x: 95, y: 195, width: 22, height: 26, customIcon: "barrel" },
       { id: "flower_1", type: "flower", x: 180, y: 375, width: 24, height: 24, customIcon: "🌻" },
       { id: "flower_2", type: "flower", x: 220, y: 385, width: 24, height: 24, customIcon: "🌷" },
       { id: "flower_3", type: "flower", x: 325, y: 260, width: 24, height: 24, customIcon: "🌼" },
       { id: "flower_4", type: "flower", x: 490, y: 265, width: 24, height: 24, customIcon: "🌸" },
       { id: "flower_5", type: "flower", x: 270, y: 375, width: 24, height: 24, customIcon: "🌼" },
+
+      // Cozy Wooden Bench near garden
+      { id: "garden_bench", type: "deco", x: 450, y: 308, width: 34, height: 22, customIcon: "bench" },
+      // Rustic Lantern Post near crossroads
+      { id: "lantern_crossroads", type: "deco", x: 495, y: 355, width: 20, height: 38, customIcon: "lantern" },
     ],
     obstacles: [
       // Player house collision box
       { x: 120, y: 100, width: 150, height: 105 },
       // Water well collision
       { x: 285, y: 145, width: 38, height: 42 },
+      // Mini-pond collision
+      { x: 50, y: 420, width: 60, height: 45 },
       // Garden Fences
       { x: 340, y: 110, width: 175, height: 16 },
       { x: 340, y: 124, width: 16, height: 115 },
