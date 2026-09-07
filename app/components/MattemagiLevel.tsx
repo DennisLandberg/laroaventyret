@@ -6,7 +6,7 @@ interface MathQuestion {
   num1: number;
   num2: number;
   answer: number;
-  hint: string;
+  fallbackHint: string;
   emoji: string;
 }
 
@@ -15,35 +15,35 @@ const questions: MathQuestion[] = [
     num1: 2,
     num2: 3,
     answer: 5,
-    hint: "Räkna med äpplen: 🍎🍎 och 🍎🍎🍎 blir 5 äpplen tillsammans!",
+    fallbackHint: "Räkna med äpplen: 🍎🍎 och 🍎🍎🍎 blir 5 äpplen tillsammans!",
     emoji: "🍎",
   },
   {
     num1: 4,
     num2: 1,
     answer: 5,
-    hint: "Börja på 4 och räkna ett steg uppåt: 4... 5!",
+    fallbackHint: "Börja på 4 och räkna ett steg uppåt: 4... 5!",
     emoji: "⭐",
   },
   {
     num1: 5,
     num2: 5,
     answer: 10,
-    hint: "Tänk på dina fingrar: 5 på vänster hand och 5 på höger hand blir 10!",
+    fallbackHint: "Tänk på dina fingrar: 5 på vänster hand och 5 på höger hand blir 10!",
     emoji: "🖐️",
   },
   {
     num1: 6,
     num2: 2,
     answer: 8,
-    hint: "Börja på 6 och hoppa 2 steg framåt: 7, 8!",
+    fallbackHint: "Börja på 6 och hoppa 2 steg framåt: 7, 8!",
     emoji: "🐸",
   },
   {
     num1: 3,
     num2: 4,
     answer: 7,
-    hint: "Börja på 4 och lägg till 3 steg till: 5, 6, 7!",
+    fallbackHint: "Börja på 4 och lägg till 3 steg till: 5, 6, 7!",
     emoji: "🎈",
   },
 ];
@@ -66,6 +66,8 @@ export default function MattemagiLevel({
     message: string;
   } | null>(null);
   const [showHint, setShowHint] = useState(false);
+  const [isLoadingHint, setIsLoadingHint] = useState(false);
+  const [hintCache, setHintCache] = useState<Record<number, string>>({});
   const [isCompleted, setIsCompleted] = useState(false);
   const [isAdvancing, setIsAdvancing] = useState(false);
 
@@ -79,6 +81,49 @@ export default function MattemagiLevel({
       inputRef.current?.focus();
     }
   }, [currentQuestionIndex, isCompleted, isAdvancing]);
+
+  const handleToggleHint = async () => {
+    if (showHint) {
+      setShowHint(false);
+      return;
+    }
+
+    setShowHint(true);
+
+    if (hintCache[currentQuestionIndex]) {
+      return;
+    }
+
+    setIsLoadingHint(true);
+    try {
+      const response = await fetch("/api/hint", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          num1: currentQ.num1,
+          num2: currentQ.num2,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Kunde inte hämta ledtråd");
+      }
+
+      const data = await response.json();
+      const generatedHint = data.hint || currentQ.fallbackHint;
+      setHintCache((prev) => ({
+        ...prev,
+        [currentQuestionIndex]: generatedHint,
+      }));
+    } catch {
+      setHintCache((prev) => ({
+        ...prev,
+        [currentQuestionIndex]: currentQ.fallbackHint,
+      }));
+    } finally {
+      setIsLoadingHint(false);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,6 +147,7 @@ export default function MattemagiLevel({
           setCurrentQuestionIndex((prev) => prev + 1);
           setUserAnswer("");
           setFeedback(null);
+          setShowHint(false);
           setIsAdvancing(false);
         } else {
           setIsCompleted(true);
@@ -316,7 +362,7 @@ export default function MattemagiLevel({
         <div className="mt-4 pt-6 border-t border-slate-100">
           <button
             type="button"
-            onClick={() => setShowHint(!showHint)}
+            onClick={handleToggleHint}
             className="inline-flex items-center gap-2 text-amber-800 hover:text-amber-950 font-bold text-sm sm:text-base bg-amber-100 hover:bg-amber-200 px-4 py-2 rounded-full transition-colors border border-amber-300 cursor-pointer"
           >
             <span>💡</span>
@@ -325,10 +371,19 @@ export default function MattemagiLevel({
 
           {showHint && (
             <div className="mt-3 p-4 bg-yellow-50 border-2 border-dashed border-yellow-300 rounded-2xl max-w-md mx-auto text-slate-700 text-sm sm:text-base font-semibold">
-              <p className="flex items-center justify-center gap-2 text-yellow-900 font-bold mb-1">
-                <span>🪄 Magisk ledtråd:</span>
-              </p>
-              <p>{currentQ.hint}</p>
+              {isLoadingHint ? (
+                <div className="flex items-center justify-center gap-2 py-2 text-amber-800 font-bold">
+                  <span className="text-xl animate-spin">🪄</span>
+                  <span>Trollar fram en magisk ledtråd...</span>
+                </div>
+              ) : (
+                <>
+                  <p className="flex items-center justify-center gap-2 text-yellow-900 font-bold mb-1">
+                    <span>🪄 Magisk ledtråd:</span>
+                  </p>
+                  <p>{hintCache[currentQuestionIndex] || currentQ.fallbackHint}</p>
+                </>
+              )}
             </div>
           )}
         </div>
