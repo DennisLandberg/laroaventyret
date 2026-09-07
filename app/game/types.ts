@@ -1,4 +1,9 @@
-export type WorldId = "hemgarden" | "mattelandet" | "ordlandet";
+export type WorldId =
+  | "hemgarden"
+  | "mattelandet"
+  | "ordlandet"
+  | "player_home"
+  | "mattehuset_interior";
 
 export type Direction = "up" | "down" | "left" | "right";
 
@@ -36,7 +41,26 @@ export interface Interactable {
 
 export interface SceneryItem {
   id: string;
-  type: "tree" | "bush" | "flower" | "rock" | "house" | "math_house" | "sign" | "deco";
+  type:
+    | "tree"
+    | "bush"
+    | "flower"
+    | "rock"
+    | "house"
+    | "math_house"
+    | "sign"
+    | "deco"
+    | "fence"
+    | "garden_bed"
+    | "well"
+    | "mailbox"
+    | "bed"
+    | "table"
+    | "fireplace"
+    | "bookshelf"
+    | "rug"
+    | "chalkboard"
+    | "pedestal";
   x: number;
   y: number;
   width: number;
@@ -44,6 +68,8 @@ export interface SceneryItem {
   label?: string;
   customIcon?: string;
   color?: string;
+  isLocked?: boolean;
+  stationLevel?: number;
 }
 
 export interface PathRect {

@@ -4,94 +4,180 @@ export const WORLDS: Record<WorldId, WorldConfig> = {
   hemgarden: {
     id: "hemgarden",
     name: "Hemgården",
-    subtitle: "Ditt trygga hem och utgångspunkt för alla äventyr",
+    subtitle: "Ditt mysiga hem och utgångspunkt för alla äventyr",
     icon: "🏡",
     width: 800,
     height: 600,
-    spawnPosition: { x: 250, y: 300 },
+    spawnPosition: { x: 210, y: 270 },
     groundBgClass: "bg-emerald-600",
     paths: [
       // From house down to central crossroads
-      { x: 190, y: 210, width: 44, height: 110, type: "dirt" },
-      // Main horizontal path across the farm
-      { x: 190, y: 300, width: 400, height: 44, type: "dirt" },
-      // Path branching up to Mattelandet portal
-      { x: 550, y: 170, width: 44, height: 150, type: "dirt" },
-      { x: 550, y: 170, width: 80, height: 44, type: "dirt" },
-      // Path branching down to Ordlandet portal
-      { x: 550, y: 320, width: 44, height: 130, type: "dirt" },
-      { x: 550, y: 430, width: 80, height: 44, type: "dirt" },
+      { x: 175, y: 220, width: 44, height: 100, type: "dirt" },
+      // Main horizontal trail across the farm
+      { x: 175, y: 310, width: 410, height: 44, type: "dirt" },
+      // Path branching into the garden gate
+      { x: 400, y: 240, width: 36, height: 80, type: "dirt" },
+      // Path branching up to Mattelandet portal (with stone circle approach)
+      { x: 550, y: 165, width: 44, height: 155, type: "dirt" },
+      { x: 550, y: 165, width: 90, height: 44, type: "stone" },
+      // Path branching down to Ordlandet portal (with stone circle approach)
+      { x: 550, y: 310, width: 44, height: 145, type: "dirt" },
+      { x: 550, y: 425, width: 90, height: 44, type: "stone" },
     ],
     scenery: [
-      // Player's Cottage
+      // Player's Cozy Cottage
       {
         id: "player_house",
         type: "house",
-        x: 130,
-        y: 110,
-        width: 140,
-        height: 110,
+        x: 120,
+        y: 100,
+        width: 150,
+        height: 125,
         label: "Ditt Hus",
       },
-      // Signpost at the crossroads
+      // Mailbox next to house
+      {
+        id: "house_mailbox",
+        type: "mailbox",
+        x: 285,
+        y: 220,
+        width: 28,
+        height: 36,
+        label: "Brevlåda",
+        customIcon: "📮",
+      },
+      // Water well near the garden
+      {
+        id: "garden_well",
+        type: "well",
+        x: 285,
+        y: 145,
+        width: 38,
+        height: 42,
+        label: "Brunn",
+        customIcon: "🪵",
+      },
+
+      // Fenced Garden - Top fence
+      { id: "fence_t", type: "fence", x: 340, y: 110, width: 175, height: 16 },
+      // Fenced Garden - Left fence
+      { id: "fence_l", type: "fence", x: 340, y: 124, width: 16, height: 115 },
+      // Fenced Garden - Right fence
+      { id: "fence_r", type: "fence", x: 499, y: 124, width: 16, height: 115 },
+      // Fenced Garden - Bottom left fence (leaves a gate opening in the middle!)
+      { id: "fence_bl", type: "fence", x: 340, y: 235, width: 55, height: 16 },
+      // Fenced Garden - Bottom right fence
+      { id: "fence_br", type: "fence", x: 440, y: 235, width: 75, height: 16 },
+
+      // Inside Garden: Tilled Vegetable plots (visual placeholders for future farming)
+      {
+        id: "veggie_patch_1",
+        type: "garden_bed",
+        x: 368,
+        y: 138,
+        width: 52,
+        height: 80,
+        label: "Morotsland",
+        customIcon: "🥕",
+      },
+      {
+        id: "veggie_patch_2",
+        type: "garden_bed",
+        x: 432,
+        y: 138,
+        width: 52,
+        height: 80,
+        label: "Grönsaksland",
+        customIcon: "🌱",
+      },
+
+      // Crossroads Signpost
       {
         id: "crossroads_sign",
         type: "sign",
-        x: 440,
-        y: 260,
+        x: 450,
+        y: 365,
         width: 32,
         height: 32,
         label: "Vägvisare",
         customIcon: "🪧",
       },
-      // Decorative trees along top edge
-      { id: "tree_t1", type: "tree", x: 40, y: 40, width: 50, height: 60 },
-      { id: "tree_t2", type: "tree", x: 340, y: 40, width: 50, height: 60 },
-      { id: "tree_t3", type: "tree", x: 420, y: 45, width: 50, height: 60 },
-      { id: "tree_t4", type: "tree", x: 500, y: 40, width: 50, height: 60 },
 
-      // Trees along left edge
-      { id: "tree_l1", type: "tree", x: 40, y: 220, width: 50, height: 60 },
-      { id: "tree_l2", type: "tree", x: 40, y: 350, width: 50, height: 60 },
-      { id: "tree_l3", type: "tree", x: 40, y: 480, width: 50, height: 60 },
+      // Rune Stones framing portals
+      { id: "rune_m1", type: "rock", x: 635, y: 115, width: 28, height: 35, customIcon: "🪨" },
+      { id: "rune_m2", type: "rock", x: 635, y: 215, width: 28, height: 35, customIcon: "🪨" },
+      { id: "rune_o1", type: "rock", x: 635, y: 395, width: 28, height: 35, customIcon: "🪨" },
+      { id: "rune_o2", type: "rock", x: 635, y: 495, width: 28, height: 35, customIcon: "🪨" },
 
-      // Trees along bottom edge
-      { id: "tree_b1", type: "tree", x: 160, y: 500, width: 50, height: 60 },
-      { id: "tree_b2", type: "tree", x: 280, y: 500, width: 50, height: 60 },
-      { id: "tree_b3", type: "tree", x: 400, y: 500, width: 50, height: 60 },
+      // Natural perimeter tree border
+      { id: "tree_t1", type: "tree", x: 35, y: 40, width: 55, height: 65 },
+      { id: "tree_t2", type: "tree", x: 550, y: 40, width: 55, height: 65 },
+      { id: "tree_t3", type: "tree", x: 650, y: 40, width: 55, height: 65 },
 
-      // Bushes and flowers near house
-      { id: "bush_1", type: "bush", x: 90, y: 150, width: 34, height: 34 },
-      { id: "bush_2", type: "bush", x: 280, y: 160, width: 34, height: 34 },
-      { id: "flower_1", type: "flower", x: 190, y: 370, width: 24, height: 24, customIcon: "🌻" },
-      { id: "flower_2", type: "flower", x: 230, y: 380, width: 24, height: 24, customIcon: "🌷" },
-      { id: "flower_3", type: "flower", x: 330, y: 260, width: 24, height: 24, customIcon: "🌼" },
-      { id: "flower_4", type: "flower", x: 480, y: 370, width: 24, height: 24, customIcon: "🌸" },
+      // Left edge trees
+      { id: "tree_l1", type: "tree", x: 35, y: 200, width: 55, height: 65 },
+      { id: "tree_l2", type: "tree", x: 35, y: 340, width: 55, height: 65 },
+      { id: "tree_l3", type: "tree", x: 35, y: 480, width: 55, height: 65 },
+
+      // Bottom edge trees & bushes
+      { id: "tree_b1", type: "tree", x: 150, y: 500, width: 55, height: 65 },
+      { id: "tree_b2", type: "tree", x: 280, y: 500, width: 55, height: 65 },
+      { id: "tree_b3", type: "tree", x: 410, y: 500, width: 55, height: 65 },
+      { id: "tree_b4", type: "tree", x: 540, y: 500, width: 55, height: 65 },
+
+      // Bushes and flowers around cottage and garden
+      { id: "bush_1", type: "bush", x: 80, y: 130, width: 34, height: 34 },
+      { id: "flower_1", type: "flower", x: 180, y: 375, width: 24, height: 24, customIcon: "🌻" },
+      { id: "flower_2", type: "flower", x: 220, y: 385, width: 24, height: 24, customIcon: "🌷" },
+      { id: "flower_3", type: "flower", x: 325, y: 260, width: 24, height: 24, customIcon: "🌼" },
+      { id: "flower_4", type: "flower", x: 490, y: 265, width: 24, height: 24, customIcon: "🌸" },
+      { id: "flower_5", type: "flower", x: 270, y: 375, width: 24, height: 24, customIcon: "🌼" },
     ],
     obstacles: [
       // Player house collision box
-      { x: 130, y: 110, width: 140, height: 95 },
-      // Top tree border
-      { x: 40, y: 40, width: 50, height: 50 },
-      { x: 340, y: 40, width: 50, height: 50 },
-      { x: 420, y: 45, width: 50, height: 50 },
-      { x: 500, y: 40, width: 50, height: 50 },
+      { x: 120, y: 100, width: 150, height: 105 },
+      // Water well collision
+      { x: 285, y: 145, width: 38, height: 42 },
+      // Garden Fences
+      { x: 340, y: 110, width: 175, height: 16 },
+      { x: 340, y: 124, width: 16, height: 115 },
+      { x: 499, y: 124, width: 16, height: 115 },
+      { x: 340, y: 235, width: 55, height: 16 },
+      { x: 440, y: 235, width: 75, height: 16 },
+      // Top trees
+      { x: 35, y: 40, width: 55, height: 55 },
+      { x: 550, y: 40, width: 55, height: 55 },
+      { x: 650, y: 40, width: 55, height: 55 },
       // Left trees
-      { x: 40, y: 220, width: 50, height: 50 },
-      { x: 40, y: 350, width: 50, height: 50 },
-      { x: 40, y: 480, width: 50, height: 50 },
+      { x: 35, y: 200, width: 55, height: 55 },
+      { x: 35, y: 340, width: 55, height: 55 },
+      { x: 35, y: 480, width: 55, height: 55 },
       // Bottom trees
-      { x: 160, y: 500, width: 50, height: 50 },
-      { x: 280, y: 500, width: 50, height: 50 },
-      { x: 400, y: 500, width: 50, height: 50 },
+      { x: 150, y: 500, width: 55, height: 55 },
+      { x: 280, y: 500, width: 55, height: 55 },
+      { x: 410, y: 500, width: 55, height: 55 },
+      { x: 540, y: 500, width: 55, height: 55 },
     ],
     interactables: [
+      // Enter Player Home Door
+      {
+        id: "door_player_home",
+        type: "building",
+        x: 195,
+        y: 225,
+        radius: 55,
+        label: "Ditt Hus",
+        prompt: "Tryck E för att gå in",
+        targetWorld: "player_home",
+        targetSpawn: { x: 300, y: 400 },
+        action: "teleport",
+      },
       // Blue Portal: Mattelandet
       {
         id: "portal_mattelandet",
         type: "portal",
         x: 670,
-        y: 170,
+        y: 165,
         radius: 60,
         label: "Mattelandet",
         prompt: "Tryck E för att gå till Mattelandet",
@@ -105,7 +191,7 @@ export const WORLDS: Record<WorldId, WorldConfig> = {
         id: "portal_ordlandet",
         type: "portal",
         x: 670,
-        y: 450,
+        y: 445,
         radius: 60,
         label: "Ordlandet",
         prompt: "Tryck E för att gå till Ordlandet",
@@ -118,13 +204,132 @@ export const WORLDS: Record<WorldId, WorldConfig> = {
       {
         id: "sign_crossroads",
         type: "sign",
-        x: 440,
-        y: 260,
+        x: 450,
+        y: 365,
         radius: 45,
         label: "Vägvisare",
         prompt: "Vägvisare: ⬅️ Hemmet | Mattelandet ↗️ | Ordlandet ↘️",
         action: "info",
-        infoMessage: "Vägvisare: ⬅️ Hemmet | Mattelandet ↗️ | Ordlandet ↘️",
+        infoMessage: "Vägvisare: ⬅️ Hemmet & Trädgården | Mattelandet ↗️ | Ordlandet ↘️",
+      },
+    ],
+  },
+
+  player_home: {
+    id: "player_home",
+    name: "Ditt Hem",
+    subtitle: "Ett varmt, tryggt och ombonat krypin",
+    icon: "🏡",
+    width: 600,
+    height: 500,
+    spawnPosition: { x: 300, y: 390 },
+    groundBgClass: "bg-amber-950",
+    paths: [],
+    scenery: [
+      // Cozy Bed (top left)
+      {
+        id: "home_bed",
+        type: "bed",
+        x: 60,
+        y: 65,
+        width: 85,
+        height: 120,
+        label: "Mysig Säng",
+      },
+      // Stone Fireplace with dancing fire (top center/right)
+      {
+        id: "home_fireplace",
+        type: "fireplace",
+        x: 410,
+        y: 55,
+        width: 110,
+        height: 85,
+        label: "Öppen Spis",
+      },
+      // Wooden Dining Table with candle/tea
+      {
+        id: "home_table",
+        type: "table",
+        x: 250,
+        y: 170,
+        width: 100,
+        height: 70,
+        label: "Matbord",
+      },
+      // Large woven carpet in center
+      {
+        id: "home_rug",
+        type: "rug",
+        x: 210,
+        y: 265,
+        width: 180,
+        height: 100,
+        label: "Ullmatta",
+      },
+      // Bookcase along right wall
+      {
+        id: "home_bookshelf",
+        type: "bookshelf",
+        x: 490,
+        y: 170,
+        width: 55,
+        height: 95,
+        label: "Bokhylla",
+      },
+      // Potted houseplant near the bed
+      {
+        id: "home_plant",
+        type: "deco",
+        x: 65,
+        y: 215,
+        width: 35,
+        height: 35,
+        customIcon: "🪴",
+      },
+      // Wall window
+      {
+        id: "home_window",
+        type: "deco",
+        x: 280,
+        y: 45,
+        width: 40,
+        height: 30,
+        customIcon: "🪟",
+      },
+      // Doormat at the exit
+      {
+        id: "home_doormat",
+        type: "deco",
+        x: 275,
+        y: 440,
+        width: 50,
+        height: 25,
+        customIcon: "🚪",
+      },
+    ],
+    obstacles: [
+      // Bed collision
+      { x: 60, y: 65, width: 85, height: 110 },
+      // Fireplace collision
+      { x: 410, y: 55, width: 110, height: 85 },
+      // Table collision
+      { x: 250, y: 170, width: 100, height: 60 },
+      // Bookshelf collision
+      { x: 490, y: 170, width: 55, height: 95 },
+    ],
+    interactables: [
+      // Exit Door to Hemgården
+      {
+        id: "exit_player_home",
+        type: "building",
+        x: 300,
+        y: 440,
+        radius: 60,
+        label: "Utgång",
+        prompt: "Tryck E för att gå ut",
+        targetWorld: "hemgarden",
+        targetSpawn: { x: 195, y: 255 },
+        action: "teleport",
       },
     ],
   },
@@ -132,14 +337,14 @@ export const WORLDS: Record<WorldId, WorldConfig> = {
   mattelandet: {
     id: "mattelandet",
     name: "Mattelandet",
-    subtitle: "En förtrollad värld fylld med siffror och mattemagi",
+    subtitle: "En förtrollad värld fylld med siffror och magiska formler",
     icon: "🪄",
     width: 800,
     height: 600,
     spawnPosition: { x: 210, y: 300 },
     groundBgClass: "bg-teal-700",
     paths: [
-      // Path from portal straight to the Math House
+      // Path from portal straight to Mattehuset
       { x: 130, y: 280, width: 440, height: 44, type: "stone" },
     ],
     scenery: [
@@ -193,10 +398,10 @@ export const WORLDS: Record<WorldId, WorldConfig> = {
         prompt: "Tryck E för att gå hem till Hemgården",
         portalColor: "amber",
         targetWorld: "hemgarden",
-        targetSpawn: { x: 590, y: 170 },
+        targetSpawn: { x: 590, y: 165 },
         action: "teleport",
       },
-      // Entrance to Mattehuset (Starts Mattemagi)
+      // Door into Mattehuset Interior
       {
         id: "math_house_door",
         type: "building",
@@ -204,8 +409,173 @@ export const WORLDS: Record<WorldId, WorldConfig> = {
         y: 305,
         radius: 65,
         label: "Mattehuset",
-        prompt: "Tryck E för att spela Mattemagi",
+        prompt: "Tryck E för att gå in i Mattehuset",
+        targetWorld: "mattehuset_interior",
+        targetSpawn: { x: 300, y: 410 },
+        action: "teleport",
+      },
+    ],
+  },
+
+  mattehuset_interior: {
+    id: "mattehuset_interior",
+    name: "Mattehuset",
+    subtitle: "Magins och siffrornas hemliga sal",
+    icon: "🪄",
+    width: 600,
+    height: 500,
+    spawnPosition: { x: 300, y: 410 },
+    groundBgClass: "bg-indigo-950",
+    paths: [],
+    scenery: [
+      // Large Chalkboard with math runes on north wall
+      {
+        id: "math_chalkboard",
+        type: "chalkboard",
+        x: 170,
+        y: 50,
+        width: 260,
+        height: 75,
+        label: "Magisk Räknetavla",
+      },
+      // Spellbook shelves flanking north wall
+      {
+        id: "spell_shelf_l",
+        type: "bookshelf",
+        x: 60,
+        y: 55,
+        width: 60,
+        height: 95,
+        label: "Trollformler",
+      },
+      {
+        id: "spell_shelf_r",
+        type: "bookshelf",
+        x: 480,
+        y: 55,
+        width: 60,
+        height: 95,
+        label: "Magiska böcker",
+      },
+
+      // 3 Math Level Stations (Pedestals)
+      // Level 1: Addition (Unlocked)
+      {
+        id: "station_pedestal_1",
+        type: "pedestal",
+        x: 105,
+        y: 200,
+        width: 90,
+        height: 90,
+        label: "Nivå 1: Addition",
+        stationLevel: 1,
+        isLocked: false,
+      },
+      // Level 2: Subtraktion (Locked)
+      {
+        id: "station_pedestal_2",
+        type: "pedestal",
+        x: 255,
+        y: 200,
+        width: 90,
+        height: 90,
+        label: "Nivå 2: Subtraktion",
+        stationLevel: 2,
+        isLocked: true,
+      },
+      // Level 3: Blandad matte (Locked)
+      {
+        id: "station_pedestal_3",
+        type: "pedestal",
+        x: 405,
+        y: 200,
+        width: 90,
+        height: 90,
+        label: "Nivå 3: Blandad matte",
+        stationLevel: 3,
+        isLocked: true,
+      },
+
+      // Center magical carpet
+      {
+        id: "math_carpet",
+        type: "rug",
+        x: 190,
+        y: 310,
+        width: 220,
+        height: 85,
+        label: "Magi-matta",
+        customIcon: "✨",
+      },
+      // Exit doormat
+      {
+        id: "matte_doormat",
+        type: "deco",
+        x: 275,
+        y: 445,
+        width: 50,
+        height: 25,
+        customIcon: "🚪",
+      },
+    ],
+    obstacles: [
+      // North wall shelves and chalkboard
+      { x: 60, y: 55, width: 60, height: 95 },
+      { x: 170, y: 50, width: 260, height: 75 },
+      { x: 480, y: 55, width: 60, height: 95 },
+      // Pedestals collision
+      { x: 105, y: 200, width: 90, height: 70 },
+      { x: 255, y: 200, width: 90, height: 70 },
+      { x: 405, y: 200, width: 90, height: 70 },
+    ],
+    interactables: [
+      // Level 1: Addition (Launches Mattemagi)
+      {
+        id: "station_addition",
+        type: "building",
+        x: 150,
+        y: 255,
+        radius: 65,
+        label: "Nivå 1: Addition",
+        prompt: "Tryck E för att spela Addition",
         action: "start_mattemagi",
+      },
+      // Level 2: Subtraktion (Locked message)
+      {
+        id: "station_subtraction",
+        type: "building",
+        x: 300,
+        y: 255,
+        radius: 65,
+        label: "Nivå 2: Subtraktion (Låst)",
+        prompt: "Klara tidigare nivåer för att låsa upp denna!",
+        action: "info",
+        infoMessage: "Klara tidigare nivåer för att låsa upp denna! 🔒",
+      },
+      // Level 3: Blandad matte (Locked message)
+      {
+        id: "station_mixed",
+        type: "building",
+        x: 450,
+        y: 255,
+        radius: 65,
+        label: "Nivå 3: Blandad matte (Låst)",
+        prompt: "Klara tidigare nivåer för att låsa upp denna!",
+        action: "info",
+        infoMessage: "Klara tidigare nivåer för att låsa upp denna! 🔒",
+      },
+      // Exit Door to Mattelandet
+      {
+        id: "exit_mattehuset",
+        type: "building",
+        x: 300,
+        y: 445,
+        radius: 60,
+        label: "Utgång",
+        prompt: "Tryck E för att gå ut",
+        targetWorld: "mattelandet",
+        targetSpawn: { x: 615, y: 350 },
+        action: "teleport",
       },
     ],
   },
@@ -276,7 +646,7 @@ export const WORLDS: Record<WorldId, WorldConfig> = {
         prompt: "Tryck E för att gå hem till Hemgården",
         portalColor: "amber",
         targetWorld: "hemgarden",
-        targetSpawn: { x: 590, y: 450 },
+        targetSpawn: { x: 590, y: 445 },
         action: "teleport",
       },
       // Construction notice

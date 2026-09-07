@@ -201,8 +201,8 @@ export default function MattemagiLevel({
             onClick={() => onBackToMap(stars)}
             className="w-full sm:w-auto px-8 py-5 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-600 hover:to-teal-600 text-white font-black text-xl sm:text-2xl rounded-full shadow-xl hover:shadow-emerald-200/80 transition-all transform hover:-translate-y-1 active:scale-95 cursor-pointer border-4 border-emerald-300 inline-flex items-center justify-center gap-3"
           >
-            <span>🗺️</span>
-            <span>Tillbaka till äventyrskartan</span>
+            <span>🪄</span>
+            <span>Tillbaka till Mattehuset</span>
           </button>
         </div>
       </div>
@@ -213,14 +213,14 @@ export default function MattemagiLevel({
     <div className="w-full max-w-3xl mx-auto flex flex-col items-center">
       {/* Top Bar: Navigation, Question Progress, Hearts, and Stars */}
       <div className="w-full bg-white/90 backdrop-blur-md rounded-3xl p-4 sm:p-6 shadow-lg border-2 border-orange-200 mb-8 flex flex-wrap items-center justify-between gap-4">
-        {/* Return to map button */}
+        {/* Return button */}
         <button
           onClick={() => onBackToMap(stars)}
           className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-full text-sm sm:text-base transition-colors border border-slate-300"
-          title="Gå tillbaka till kartan"
+          title="Gå tillbaka till Mattehuset"
         >
           <span>⬅️</span>
-          <span>Kartan</span>
+          <span>Tillbaka</span>
         </button>
 
         {/* Current Question Indicator */}

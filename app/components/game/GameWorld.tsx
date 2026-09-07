@@ -363,6 +363,210 @@ export default function GameWorld({
             );
           }
 
+          if (item.type === "fence") {
+            return (
+              <div
+                key={item.id}
+                style={{ left, top, width, height }}
+                className="absolute z-10 bg-amber-800/90 border border-amber-950 rounded-xs flex items-center justify-around overflow-hidden shadow-xs pointer-events-none"
+              >
+                <div className="w-1.5 h-full bg-amber-950/40" />
+                <div className="w-1.5 h-full bg-amber-950/40" />
+              </div>
+            );
+          }
+
+          if (item.type === "garden_bed") {
+            return (
+              <div
+                key={item.id}
+                style={{ left, top, width, height }}
+                className="absolute z-10 bg-amber-950/85 border-2 border-amber-900/90 rounded-md p-1 flex flex-col justify-around items-center shadow-inner pointer-events-none"
+              >
+                <div className="flex justify-around w-full text-sm sm:text-base">
+                  <span>{item.customIcon || "🌱"}</span>
+                  <span>{item.customIcon || "🌱"}</span>
+                </div>
+                <div className="flex justify-around w-full text-sm sm:text-base">
+                  <span>{item.customIcon || "🌱"}</span>
+                  <span>{item.customIcon || "🌱"}</span>
+                </div>
+              </div>
+            );
+          }
+
+          if (item.type === "well") {
+            return (
+              <div
+                key={item.id}
+                style={{ left, top, width, height }}
+                className="absolute z-10 flex flex-col items-center justify-center pointer-events-none"
+              >
+                <div className="w-full h-3 bg-amber-800 rounded-t border border-amber-950 shadow-xs" />
+                <div className="w-4/5 h-6 bg-slate-400 rounded-b-md border-2 border-slate-600 shadow-inner flex items-center justify-center text-xs">
+                  🪣
+                </div>
+              </div>
+            );
+          }
+
+          if (item.type === "mailbox") {
+            return (
+              <div
+                key={item.id}
+                style={{ left, top, width, height }}
+                className="absolute z-10 flex items-center justify-center pointer-events-none text-2xl"
+              >
+                📮
+              </div>
+            );
+          }
+
+          if (item.type === "bed") {
+            return (
+              <div
+                key={item.id}
+                style={{ left, top, width, height }}
+                className="absolute z-10 bg-amber-900 border-2 border-amber-950 rounded-lg p-1 flex flex-col shadow-md pointer-events-none overflow-hidden"
+              >
+                <div className="w-full h-1/3 bg-amber-800 rounded-t flex items-center justify-center">
+                  <div className="w-3/4 h-4 bg-white/90 rounded border border-slate-300 shadow-xs" />
+                </div>
+                <div className="w-full h-2/3 bg-rose-600 rounded-b border-t-2 border-rose-800 flex items-center justify-center text-xs text-yellow-200 font-bold">
+                  ★
+                </div>
+              </div>
+            );
+          }
+
+          if (item.type === "fireplace") {
+            return (
+              <div
+                key={item.id}
+                style={{ left, top, width, height }}
+                className="absolute z-10 bg-stone-700 border-2 border-stone-900 rounded-t-lg flex flex-col items-center justify-between p-1 shadow-lg pointer-events-none"
+              >
+                <div className="w-full h-2.5 bg-stone-800 rounded-t border-b border-stone-950" />
+                <div className="w-3/4 h-2/3 bg-stone-950 rounded-t-md flex items-center justify-center border border-stone-800">
+                  <span className="text-xl animate-pulse">🔥</span>
+                </div>
+              </div>
+            );
+          }
+
+          if (item.type === "table") {
+            return (
+              <div
+                key={item.id}
+                style={{ left, top, width, height }}
+                className="absolute z-10 bg-amber-800 border-2 border-amber-950 rounded-md flex items-center justify-around px-2 shadow-md pointer-events-none"
+              >
+                <span className="text-sm">🪑</span>
+                <div className="flex items-center gap-1 text-xs">
+                  <span>☕</span>
+                  <span>🕯️</span>
+                </div>
+                <span className="text-sm">🪑</span>
+              </div>
+            );
+          }
+
+          if (item.type === "bookshelf") {
+            return (
+              <div
+                key={item.id}
+                style={{ left, top, width, height }}
+                className="absolute z-10 bg-amber-900 border-2 border-amber-950 rounded-t flex flex-col justify-around p-1 shadow-md pointer-events-none"
+              >
+                <div className="w-full border-b border-amber-950 flex items-center justify-around text-[10px]">
+                  📕📗📘
+                </div>
+                <div className="w-full border-b border-amber-950 flex items-center justify-around text-[10px]">
+                  📙📜🔮
+                </div>
+                <div className="w-full flex items-center justify-around text-[10px]">
+                  📘📕📗
+                </div>
+              </div>
+            );
+          }
+
+          if (item.type === "rug") {
+            return (
+              <div
+                key={item.id}
+                style={{ left, top, width, height }}
+                className="absolute z-5 bg-gradient-to-r from-red-800 via-amber-700 to-red-800 border-2 border-amber-400/60 rounded-full flex items-center justify-center shadow-inner pointer-events-none opacity-90"
+              >
+                <div className="w-3/4 h-2/3 border border-dashed border-amber-300/60 rounded-full flex items-center justify-center text-xs text-amber-200">
+                  {item.customIcon || "⚜️"}
+                </div>
+              </div>
+            );
+          }
+
+          if (item.type === "chalkboard") {
+            return (
+              <div
+                key={item.id}
+                style={{ left, top, width, height }}
+                className="absolute z-10 bg-emerald-950 border-4 border-amber-900 rounded-md shadow-lg p-1.5 flex flex-col justify-between pointer-events-none"
+              >
+                <div className="flex justify-between items-center text-yellow-200 text-xs font-mono font-bold px-2">
+                  <span>✨ 1 + 2 = 3</span>
+                  <span>2 + 2 = 4 ✨</span>
+                </div>
+                <div className="text-center text-white/90 text-xs font-sans font-bold">
+                  {item.label}
+                </div>
+              </div>
+            );
+          }
+
+          if (item.type === "pedestal") {
+            return (
+              <div
+                key={item.id}
+                style={{ left, top, width, height }}
+                className="absolute z-10 flex flex-col items-center justify-between pointer-events-none select-none"
+              >
+                {/* Floating Book or Padlock */}
+                <div
+                  className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-lg border-2 transition-all ${
+                    item.isLocked
+                      ? "bg-slate-700 border-slate-500 text-slate-300 opacity-80"
+                      : "bg-gradient-to-tr from-amber-400 to-yellow-300 border-amber-200 text-amber-950 animate-bounce shadow-amber-300/60 ring-4 ring-amber-300/30"
+                  }`}
+                >
+                  {item.isLocked ? "🔒" : "📖"}
+                </div>
+
+                {/* Pedestal Base */}
+                <div
+                  className={`w-full h-8 rounded-md border-2 flex items-center justify-center text-[10px] font-black tracking-wider uppercase shadow-inner ${
+                    item.isLocked
+                      ? "bg-slate-600 border-slate-700 text-slate-300"
+                      : "bg-amber-600 border-amber-700 text-yellow-100"
+                  }`}
+                >
+                  {item.label}
+                </div>
+              </div>
+            );
+          }
+
+          if (item.type === "rock") {
+            return (
+              <div
+                key={item.id}
+                style={{ left, top, width, height }}
+                className="absolute z-10 flex items-center justify-center pointer-events-none text-2xl"
+              >
+                {item.customIcon || "🪨"}
+              </div>
+            );
+          }
+
           if (item.type === "sign") {
             return (
               <div

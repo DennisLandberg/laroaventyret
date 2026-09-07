@@ -25,9 +25,9 @@ export default function Home() {
   const handleBackFromMattemagi = (updatedStars: number) => {
     setStars(updatedStars);
     setCurrentScreen("world");
-    // Return player in front of the Math House in Mattelandet
-    setCurrentWorldId("mattelandet");
-    setPlayerSpawnPos({ x: 615, y: 350 });
+    // Return player INSIDE Mattehuset in front of Level 1 (Addition) station
+    setCurrentWorldId("mattehuset_interior");
+    setPlayerSpawnPos({ x: 150, y: 310 });
   };
 
   const activeWorld = WORLDS[currentWorldId] || WORLDS.hemgarden;
