@@ -42,17 +42,28 @@ const levels: Level[] = [
   },
 ];
 
-export default function AdventureMap() {
-  const [stars] = useState<number>(0);
+interface AdventureMapProps {
+  stars?: number;
+  onStartLevel?: (levelId: number) => void;
+}
+
+export default function AdventureMap({
+  stars = 0,
+  onStartLevel,
+}: AdventureMapProps) {
   const [activeMessage, setActiveMessage] = useState<string | null>(null);
   const [messageType, setMessageType] = useState<"success" | "locked" | null>(null);
 
   const handleLevelClick = (level: Level) => {
     if (level.unlocked) {
-      setMessageType("success");
-      setActiveMessage(
-        `🎉 Välkommen till ${level.title}! Gör dig redo för ditt allra första magiska uppdrag!`
-      );
+      if (onStartLevel) {
+        onStartLevel(level.id);
+      } else {
+        setMessageType("success");
+        setActiveMessage(
+          `🎉 Välkommen till ${level.title}! Gör dig redo för ditt allra första magiska uppdrag!`
+        );
+      }
     } else {
       setMessageType("locked");
       setActiveMessage(
@@ -62,8 +73,12 @@ export default function AdventureMap() {
   };
 
   const handleStartLevel1 = () => {
-    const level1 = levels[0];
-    handleLevelClick(level1);
+    if (onStartLevel) {
+      onStartLevel(1);
+    } else {
+      const level1 = levels[0];
+      handleLevelClick(level1);
+    }
   };
 
   return (

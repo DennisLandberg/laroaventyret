@@ -1,6 +1,24 @@
+"use client";
+
+import { useState } from "react";
 import AdventureMap from "./components/AdventureMap";
+import MattemagiLevel from "./components/MattemagiLevel";
 
 export default function Home() {
+  const [currentScreen, setCurrentScreen] = useState<"map" | "mattemagi">("map");
+  const [stars, setStars] = useState<number>(0);
+
+  const handleStartLevel = (levelId: number) => {
+    if (levelId === 1) {
+      setCurrentScreen("mattemagi");
+    }
+  };
+
+  const handleBackToMap = (updatedStars: number) => {
+    setStars(updatedStars);
+    setCurrentScreen("map");
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-100 via-amber-50/60 to-emerald-100 flex flex-col justify-between p-4 sm:p-8">
       {/* Playful Floating Background Elements */}
@@ -21,7 +39,14 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col items-center justify-center py-6 sm:py-12">
-        <AdventureMap />
+        {currentScreen === "map" ? (
+          <AdventureMap stars={stars} onStartLevel={handleStartLevel} />
+        ) : (
+          <MattemagiLevel
+            initialStars={stars}
+            onBackToMap={handleBackToMap}
+          />
+        )}
       </main>
 
       {/* Footer */}
