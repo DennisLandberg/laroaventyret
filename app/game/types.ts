@@ -3,7 +3,8 @@ export type WorldId =
   | "mattelandet"
   | "ordlandet"
   | "player_home"
-  | "mattehuset_interior";
+  | "mattehuset_interior"
+  | "ordhuset_interior";
 
 export type Direction = "up" | "down" | "left" | "right";
 
@@ -35,8 +36,9 @@ export interface Interactable {
   portalColor?: "blue" | "green" | "amber";
   targetWorld?: WorldId;
   targetSpawn?: Position;
-  action?: "teleport" | "start_mattemagi" | "info";
+  action?: "teleport" | "start_mattemagi" | "start_ordmagi" | "info";
   infoMessage?: string;
+  mathMode?: "addition" | "subtraction" | "mixed";
 }
 
 export interface SceneryItem {
@@ -48,6 +50,7 @@ export interface SceneryItem {
     | "rock"
     | "house"
     | "math_house"
+    | "word_house"
     | "sign"
     | "deco"
     | "fence"

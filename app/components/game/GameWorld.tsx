@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import Image from "next/image";
 import { WorldConfig, WorldId, Position, Direction, Interactable, PathRect, SceneryItem } from "@/app/game/types";
 import Player from "./Player";
@@ -11,8 +11,13 @@ interface GameWorldProps {
   stars: number;
   coins: number;
   initialPlayerPos?: Position;
+  ordLevel1Complete?: boolean;
+  mathLevel1Complete?: boolean;
+  mathLevel2Complete?: boolean;
+  mathLevel3Complete?: boolean;
   onTeleport: (targetWorld: WorldId, targetSpawn?: Position) => void;
-  onStartMattemagi: () => void;
+  onStartMattemagi: (mode?: "addition" | "subtraction" | "mixed") => void;
+  onStartOrdmagi?: () => void;
 }
 
 const OAK_BASE_WIDTH = 112;
@@ -200,6 +205,101 @@ const MATTELAND_TREE_VISUAL: Record<
   m_tree_8: { kind: "oak", scale: 0.94, offsetX: 10, offsetY: 4 },
 };
 
+const ORDLAND_TREE_VISUAL: Record<
+  string,
+  { kind: "oak" | "pine"; scale: number; offsetX: number; offsetY: number }
+> = {
+  o_tree_1: { kind: "oak", scale: 0.9, offsetX: -8, offsetY: 4 },
+  o_tree_2: { kind: "pine", scale: 0.86, offsetX: 6, offsetY: 2 },
+  o_tree_3: { kind: "oak", scale: 0.84, offsetX: -6, offsetY: 6 },
+  o_tree_4: { kind: "pine", scale: 0.92, offsetX: 10, offsetY: 0 },
+  o_tree_5: { kind: "pine", scale: 0.84, offsetX: -4, offsetY: 4 },
+  o_tree_6: { kind: "oak", scale: 0.88, offsetX: 8, offsetY: 6 },
+  o_tree_7: { kind: "pine", scale: 0.8, offsetX: -6, offsetY: 2 },
+  o_tree_8: { kind: "oak", scale: 0.9, offsetX: 8, offsetY: 4 },
+};
+
+function applyMattehusetProgress(
+  world: WorldConfig,
+  mathLevel1Complete: boolean,
+  mathLevel2Complete: boolean
+): WorldConfig {
+  if (world.id !== "mattehuset_interior") {
+    return world;
+  }
+  if (!mathLevel1Complete && !mathLevel2Complete) {
+    return world;
+  }
+
+  return {
+    ...world,
+    scenery: world.scenery.map((item) => {
+      if (item.id === "station_pedestal_2" && mathLevel1Complete) {
+        return { ...item, isLocked: false };
+      }
+      if (item.id === "station_pedestal_3" && mathLevel2Complete) {
+        return { ...item, isLocked: false };
+      }
+      return item;
+    }),
+    interactables: world.interactables.map((item) => {
+      if (item.id === "station_subtraction" && mathLevel1Complete) {
+        return {
+          ...item,
+          label: "Nivå 2: Subtraktion",
+          prompt: "Tryck E för att spela Subtraktion",
+          action: "start_mattemagi",
+          mathMode: "subtraction",
+          infoMessage: undefined,
+        };
+      }
+      if (item.id === "station_mixed" && mathLevel2Complete) {
+        return {
+          ...item,
+          label: "Nivå 3: Blandad matte",
+          prompt: "Tryck E för att spela Blandad matte",
+          action: "start_mattemagi",
+          mathMode: "mixed",
+          infoMessage: undefined,
+        };
+      }
+      return item;
+    }),
+  };
+}
+
+function applyOrdHusetProgress(
+  world: WorldConfig,
+  ordLevel1Complete: boolean
+): WorldConfig {
+  if (world.id !== "ordhuset_interior" || !ordLevel1Complete) {
+    return world;
+  }
+
+  return {
+    ...world,
+    scenery: world.scenery.map((item) => {
+      if (item.id === "ord_station_pedestal_2") {
+        return { ...item, isLocked: false };
+      }
+      return item;
+    }),
+    interactables: world.interactables.map((item) => {
+      if (item.id === "station_saknade_bokstaver") {
+        return {
+          ...item,
+          label: "Nivå 2: Saknade bokstäver",
+          prompt: "Tryck E för att höra mer",
+          action: "info",
+          infoMessage:
+            "Saknade bokstäver är upplåst, men spelet byggs fortfarande. Kom tillbaka snart! ✨",
+        };
+      }
+      return item;
+    }),
+  };
+}
+
 const BUSH_SHEET = { src: "/assets/hemgarden/bushes.png", w: 1774, h: 887 };
 
 const BUSH_FRAMES = {
@@ -226,13 +326,27 @@ const HEMGARDEN_BUSHES: { x: number; y: number; width: number; frame: BushFrameI
 ];
 
 export default function GameWorld({
-  world,
+  world: worldProp,
   stars,
   coins,
   initialPlayerPos,
+  ordLevel1Complete = false,
+  mathLevel1Complete = false,
+  mathLevel2Complete = false,
+  mathLevel3Complete = false,
   onTeleport,
   onStartMattemagi,
+  onStartOrdmagi,
 }: GameWorldProps) {
+  const world = useMemo(
+    () =>
+      applyMattehusetProgress(
+        applyOrdHusetProgress(worldProp, ordLevel1Complete),
+        mathLevel1Complete,
+        mathLevel2Complete
+      ),
+    [worldProp, ordLevel1Complete, mathLevel1Complete, mathLevel2Complete]
+  );
   // Player position and state
   const [playerPos, setPlayerPos] = useState<Position>(
     initialPlayerPos || world.spawnPosition
@@ -305,13 +419,15 @@ export default function GameWorld({
     if (!item) return;
 
     if (item.action === "start_mattemagi") {
-      onStartMattemagi();
+      onStartMattemagi(item.mathMode ?? "addition");
+    } else if (item.action === "start_ordmagi") {
+      onStartOrdmagi?.();
     } else if (item.action === "teleport" && item.targetWorld) {
       onTeleport(item.targetWorld, item.targetSpawn);
     } else if (item.action === "info") {
       setInfoModal(item.infoMessage || item.prompt);
     }
-  }, [onStartMattemagi, onTeleport]);
+  }, [onStartMattemagi, onStartOrdmagi, onTeleport]);
 
   // Handle keyboard inputs
   useEffect(() => {
@@ -423,6 +539,10 @@ export default function GameWorld({
     };
   }, [checkCollision, checkInteractables]);
 
+  useEffect(() => {
+    checkInteractables(posRef.current.x, posRef.current.y);
+  }, [checkInteractables, initialPlayerPos]);
+
   return (
     <div className="w-full max-w-5xl mx-auto flex flex-col items-center select-none">
       {/* Top HUD */}
@@ -436,10 +556,14 @@ export default function GameWorld({
         className="relative overflow-hidden rounded-3xl border-4 sm:border-6 border-amber-950/90 shadow-2xl bg-emerald-800 ring-4 ring-amber-900/30"
       >
         {/* World floor */}
-        {world.id === "hemgarden" || world.id === "mattelandet" ? (
+        {world.id === "hemgarden" ||
+        world.id === "mattelandet" ||
+        world.id === "ordlandet" ? (
           <HemgardenGround />
         ) : world.id === "player_home" ? (
           <PlayerHomeInterior />
+        ) : world.id === "ordhuset_interior" ? (
+          <OrdhusetInterior />
         ) : (
           <div
             className={`absolute inset-0 ${world.groundBgClass}`}
@@ -546,6 +670,30 @@ export default function GameWorld({
             );
           }
 
+          if (item.type === "word_house") {
+            return (
+              <div
+                key={item.id}
+                style={{ left, top, width, height }}
+                className="absolute z-10 pointer-events-none flex flex-col"
+              >
+                <div className="relative h-[38%] bg-emerald-700 border-2 border-emerald-950 shadow-md [clip-path:polygon(50%_0,100%_100%,0_100%)] flex items-end justify-center pb-0.5">
+                  <span className="text-sm drop-shadow">📖</span>
+                </div>
+                <div className="flex-1 bg-amber-100 border-2 border-amber-900 relative shadow-inner">
+                  <div className="absolute left-1/2 -translate-x-1/2 bottom-0 w-[28%] h-[58%] bg-amber-800 border-x-2 border-t-2 border-amber-950 rounded-t-sm" />
+                  <div className="absolute left-[12%] top-[18%] w-[18%] h-[22%] bg-sky-200 border-2 border-amber-900" />
+                  <div className="absolute right-[12%] top-[18%] w-[18%] h-[22%] bg-sky-200 border-2 border-amber-900" />
+                </div>
+                {item.label ? (
+                  <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-amber-950/80 px-2 py-0.5 text-[10px] font-black text-amber-100">
+                    {item.label}
+                  </div>
+                ) : null}
+              </div>
+            );
+          }
+
           if (item.type === "math_house") {
             const visualWidth = MATTEHUSET_VISUAL_W;
             const visualHeight = visualWidth / MATTEHUSET_ASPECT;
@@ -579,23 +727,27 @@ export default function GameWorld({
 
           if (item.type === "tree") {
             const isBlossom = item.color === "pink";
-            const mattelandVisual =
-              world.id === "mattelandet" ? MATTELAND_TREE_VISUAL[item.id] : undefined;
-            if (mattelandVisual) {
+            const pngTreeVisual =
+              world.id === "mattelandet"
+                ? MATTELAND_TREE_VISUAL[item.id]
+                : world.id === "ordlandet"
+                  ? ORDLAND_TREE_VISUAL[item.id]
+                  : undefined;
+            if (pngTreeVisual) {
               const aspect =
-                mattelandVisual.kind === "pine" ? PINE_ASPECT : OAK_ASPECT;
-              const visualWidth = OAK_BASE_WIDTH * mattelandVisual.scale;
+                pngTreeVisual.kind === "pine" ? PINE_ASPECT : OAK_ASPECT;
+              const visualWidth = OAK_BASE_WIDTH * pngTreeVisual.scale;
               const visualHeight = visualWidth / aspect;
               const visualLeft =
                 item.x +
                 item.width / 2 -
                 visualWidth / 2 +
-                mattelandVisual.offsetX;
+                pngTreeVisual.offsetX;
               const visualTop =
                 item.y +
                 item.height -
                 visualHeight +
-                mattelandVisual.offsetY;
+                pngTreeVisual.offsetY;
               return (
                 <div
                   key={item.id}
@@ -609,11 +761,11 @@ export default function GameWorld({
                 >
                   <Image
                     src={
-                      mattelandVisual.kind === "pine"
+                      pngTreeVisual.kind === "pine"
                         ? "/assets/hemgarden/tree.pine.png"
                         : "/assets/hemgarden/tree_oak.png"
                     }
-                    alt={mattelandVisual.kind === "pine" ? "Tall" : "Ek"}
+                    alt={pngTreeVisual.kind === "pine" ? "Tall" : "Ek"}
                     fill
                     unoptimized
                     sizes="130px"
@@ -908,6 +1060,7 @@ export default function GameWorld({
           }
 
           if (item.type === "chalkboard") {
+            const isWordHall = world.id === "ordhuset_interior";
             return (
               <div
                 key={item.id}
@@ -915,8 +1068,17 @@ export default function GameWorld({
                 className="absolute z-10 bg-emerald-950 border-4 border-amber-900 rounded-md shadow-lg p-1.5 flex flex-col justify-between pointer-events-none"
               >
                 <div className="flex justify-between items-center text-yellow-200 text-xs font-mono font-bold px-2">
-                  <span>✨ 1 + 2 = 3</span>
-                  <span>2 + 2 = 4 ✨</span>
+                  {isWordHall ? (
+                    <>
+                      <span>Aa Bb Cc</span>
+                      <span>📖 ✨</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>✨ 1 + 2 = 3</span>
+                      <span>2 + 2 = 4 ✨</span>
+                    </>
+                  )}
                 </div>
                 <div className="text-center text-white/90 text-xs font-sans font-bold">
                   {item.label}
@@ -940,7 +1102,14 @@ export default function GameWorld({
                       : "bg-gradient-to-tr from-amber-400 to-yellow-300 border-amber-200 text-amber-950 animate-bounce shadow-amber-300/60 ring-4 ring-amber-300/30"
                   }`}
                 >
-                  {item.isLocked ? "🔒" : "📖"}
+                  {item.isLocked
+                    ? "🔒"
+                    : (item.id === "ord_station_pedestal_1" && ordLevel1Complete) ||
+                        (item.id === "station_pedestal_1" && mathLevel1Complete) ||
+                        (item.id === "station_pedestal_2" && mathLevel2Complete) ||
+                        (item.id === "station_pedestal_3" && mathLevel3Complete)
+                      ? "⭐"
+                      : "📖"}
                 </div>
 
                 {/* Pedestal Base */}
@@ -1723,6 +1892,30 @@ function MattelandetPaths({ world }: { world: WorldConfig }) {
         />
       ))}
     </svg>
+  );
+}
+
+function OrdhusetInterior() {
+  return (
+    <div className="absolute inset-0 pointer-events-none overflow-hidden">
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundColor: "#6b4428",
+          backgroundImage:
+            "repeating-linear-gradient(90deg, #7a5230 0 28px, #6b4428 28px 30px, #8a5c38 30px 56px, #6b4428 56px 58px)",
+          imageRendering: "pixelated",
+        }}
+      />
+      <div
+        className="absolute left-0 right-0 top-0"
+        style={{
+          height: "16%",
+          background: "linear-gradient(#3d2414, #5c3a22)",
+          boxShadow: "inset 0 -3px 0 #2a1810",
+        }}
+      />
+    </div>
   );
 }
 

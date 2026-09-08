@@ -3,30 +3,76 @@
 import { useState } from "react";
 import { WorldId, Position } from "./game/types";
 import { WORLDS } from "./game/worlds";
+import type { MathMode } from "./game/mathQuestions";
 import GameWorld from "./components/game/GameWorld";
 import MattemagiLevel from "./components/MattemagiLevel";
+import HittaOrdetLevel from "./components/HittaOrdetLevel";
 
 export default function Home() {
-  const [currentScreen, setCurrentScreen] = useState<"world" | "mattemagi">("world");
+  const [currentScreen, setCurrentScreen] = useState<
+    "world" | "mattemagi" | "hitta_ordet"
+  >("world");
   const [currentWorldId, setCurrentWorldId] = useState<WorldId>("hemgarden");
   const [playerSpawnPos, setPlayerSpawnPos] = useState<Position | undefined>(undefined);
   const [stars, setStars] = useState<number>(0);
   const [coins] = useState<number>(0);
+  const [ordLevel1Complete, setOrdLevel1Complete] = useState(false);
+  const [mathLevel1Complete, setMathLevel1Complete] = useState(false);
+  const [mathLevel2Complete, setMathLevel2Complete] = useState(false);
+  const [mathLevel3Complete, setMathLevel3Complete] = useState(false);
+  const [mathMode, setMathMode] = useState<MathMode>("addition");
 
   const handleTeleport = (targetWorld: WorldId, targetSpawn?: Position) => {
     setCurrentWorldId(targetWorld);
     setPlayerSpawnPos(targetSpawn);
   };
 
-  const handleStartMattemagi = () => {
+  const handleStartMattemagi = (mode: MathMode = "addition") => {
+    setMathMode(mode);
     setCurrentScreen("mattemagi");
   };
 
-  const handleBackFromMattemagi = (updatedStars: number) => {
+  const handleStartOrdmagi = () => {
+    setCurrentScreen("hitta_ordet");
+  };
+
+  const handleBackFromMattemagi = (
+    updatedStars: number,
+    completedLevel: boolean
+  ) => {
     setStars(updatedStars);
+    if (completedLevel && mathMode === "addition") {
+      setMathLevel1Complete(true);
+    }
+    if (completedLevel && mathMode === "subtraction") {
+      setMathLevel2Complete(true);
+    }
+    if (completedLevel && mathMode === "mixed") {
+      setMathLevel3Complete(true);
+    }
     setCurrentScreen("world");
-    // Return player INSIDE Mattehuset in front of Level 1 (Addition) station
     setCurrentWorldId("mattehuset_interior");
+    setPlayerSpawnPos(
+      mathMode === "mixed"
+        ? { x: 450, y: 310 }
+        : mathMode === "subtraction"
+          ? { x: 450, y: 310 }
+          : mathMode === "addition" && completedLevel
+            ? { x: 300, y: 310 }
+            : { x: 150, y: 310 }
+    );
+  };
+
+  const handleBackFromHittaOrdet = (
+    updatedStars: number,
+    completedLevel: boolean
+  ) => {
+    setStars(updatedStars);
+    if (completedLevel) {
+      setOrdLevel1Complete(true);
+    }
+    setCurrentScreen("world");
+    setCurrentWorldId("ordhuset_interior");
     setPlayerSpawnPos({ x: 150, y: 310 });
   };
 
@@ -59,13 +105,25 @@ export default function Home() {
             stars={stars}
             coins={coins}
             initialPlayerPos={playerSpawnPos}
+            ordLevel1Complete={ordLevel1Complete}
+            mathLevel1Complete={mathLevel1Complete}
+            mathLevel2Complete={mathLevel2Complete}
+            mathLevel3Complete={mathLevel3Complete}
             onTeleport={handleTeleport}
             onStartMattemagi={handleStartMattemagi}
+            onStartOrdmagi={handleStartOrdmagi}
           />
-        ) : (
+        ) : currentScreen === "mattemagi" ? (
           <MattemagiLevel
+            key={mathMode}
+            mode={mathMode}
             initialStars={stars}
             onBackToMap={handleBackFromMattemagi}
+          />
+        ) : (
+          <HittaOrdetLevel
+            initialStars={stars}
+            onBackToMap={handleBackFromHittaOrdet}
           />
         )}
       </main>
@@ -77,5 +135,3 @@ export default function Home() {
     </div>
   );
 }
-
-

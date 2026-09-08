@@ -1,62 +1,35 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
-
-interface MathQuestion {
-  num1: number;
-  num2: number;
-  answer: number;
-  fallbackHint: string;
-  emoji: string;
-}
-
-const questions: MathQuestion[] = [
-  {
-    num1: 2,
-    num2: 3,
-    answer: 5,
-    fallbackHint: "Räkna med äpplen: 🍎🍎 och 🍎🍎🍎 blir 5 äpplen tillsammans!",
-    emoji: "🍎",
-  },
-  {
-    num1: 4,
-    num2: 1,
-    answer: 5,
-    fallbackHint: "Börja på 4 och räkna ett steg uppåt: 4... 5!",
-    emoji: "⭐",
-  },
-  {
-    num1: 5,
-    num2: 5,
-    answer: 10,
-    fallbackHint: "Tänk på dina fingrar: 5 på vänster hand och 5 på höger hand blir 10!",
-    emoji: "🖐️",
-  },
-  {
-    num1: 6,
-    num2: 2,
-    answer: 8,
-    fallbackHint: "Börja på 6 och hoppa 2 steg framåt: 7, 8!",
-    emoji: "🐸",
-  },
-  {
-    num1: 3,
-    num2: 4,
-    answer: 7,
-    fallbackHint: "Börja på 4 och lägg till 3 steg till: 5, 6, 7!",
-    emoji: "🎈",
-  },
-];
+import React, { useState, useRef, useEffect, useMemo, useSyncExternalStore } from "react";
+import {
+  getMathLevelTitle,
+  getMathQuestions,
+  type MathMode,
+} from "@/app/game/mathQuestions";
 
 interface MattemagiLevelProps {
   initialStars: number;
-  onBackToMap: (updatedStars: number) => void;
+  mode?: MathMode;
+  onBackToMap: (updatedStars: number, completedLevel: boolean) => void;
 }
 
 export default function MattemagiLevel({
   initialStars,
+  mode = "addition",
   onBackToMap,
 }: MattemagiLevelProps) {
+  const isClient = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
+  const questions = useMemo(() => {
+    if (mode === "mixed" && !isClient) {
+      return [];
+    }
+    return getMathQuestions(mode);
+  }, [mode, isClient]);
+  const levelTitle = getMathLevelTitle(mode);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswer, setUserAnswer] = useState("");
   const [stars, setStars] = useState(initialStars);
@@ -76,12 +49,15 @@ export default function MattemagiLevel({
   const currentQ = questions[currentQuestionIndex];
 
   useEffect(() => {
-    if (!isCompleted && !isAdvancing) {
+    if (!isCompleted && !isAdvancing && currentQ) {
       inputRef.current?.focus();
     }
-  }, [currentQuestionIndex, isCompleted, isAdvancing]);
+  }, [currentQuestionIndex, isCompleted, isAdvancing, currentQ]);
 
   const handleToggleHint = async () => {
+    if (!currentQ) {
+      return;
+    }
     if (showHint) {
       setShowHint(false);
       return;
@@ -101,6 +77,7 @@ export default function MattemagiLevel({
         body: JSON.stringify({
           num1: currentQ.num1,
           num2: currentQ.num2,
+          operator: currentQ.operator,
         }),
       });
 
@@ -126,7 +103,7 @@ export default function MattemagiLevel({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (isAdvancing || !userAnswer.trim()) return;
+    if (isAdvancing || !currentQ || !userAnswer.trim()) return;
 
     const parsedAnswer = parseInt(userAnswer.trim(), 10);
 
@@ -178,7 +155,9 @@ export default function MattemagiLevel({
     setUserAnswer(String(next));
   };
 
-  const ladybugLine = isLoadingHint
+  const ladybugLine = !currentQ
+    ? "Nyckelpigan blandar tal... ✨"
+    : isLoadingHint
     ? "Nyckelpigan tänker... ✨"
     : feedback?.type === "success"
       ? "Rätt! Fantastiskt! ⭐"
@@ -186,7 +165,9 @@ export default function MattemagiLevel({
         ? "Nästan! Försök en gång till! ❤️"
         : showHint
           ? hintCache[currentQuestionIndex] || currentQ.fallbackHint
-          : "Du klarar det!\nRäkna äpplena\nså ser du! ❤️";
+          : currentQ.operator === "-"
+            ? "Du klarar det!\nRäkna hur många\nsom blir kvar! ❤️"
+            : "Du klarar det!\nRäkna äpplena\nså ser du! ❤️";
 
   return (
     <div className="mattemagi-scene">
@@ -224,14 +205,23 @@ export default function MattemagiLevel({
         <VineFrame />
 
         {isCompleted ? (
-          <CompletionBoard stars={stars} onBack={() => onBackToMap(stars)} />
+          <CompletionBoard
+            stars={stars}
+            levelTitle={levelTitle}
+            onBack={() => onBackToMap(stars, true)}
+          />
+        ) : !currentQ ? (
+          <div className="mattemagi-body" style={{ alignItems: "center" }}>
+            <div className="mattemagi-wood mattemagi-hud-sub">{levelTitle}</div>
+            <p className="mattemagi-kicker">Nyckelpigan blandar talen... ✨</p>
+          </div>
         ) : (
           <>
             <header className="mattemagi-hud">
               <button
                 type="button"
                 className="mattemagi-wood mattemagi-hud-back"
-                onClick={() => onBackToMap(stars)}
+                onClick={() => onBackToMap(stars, false)}
                 title="Gå tillbaka till Mattehuset"
               >
                 ← Tillbaka
@@ -239,6 +229,7 @@ export default function MattemagiLevel({
 
               <div className="flex flex-col items-center">
                 <div className="mattemagi-wood mattemagi-hud-title">MATTEMAGI</div>
+                <div className="mattemagi-wood mattemagi-hud-sub">{levelTitle}</div>
                 <div className="mattemagi-wood mattemagi-hud-sub">
                   Fråga {currentQuestionIndex + 1} av {questions.length}
                 </div>
@@ -301,7 +292,7 @@ export default function MattemagiLevel({
                         <span key={`a-${i}`}>{currentQ.emoji}</span>
                       ))}
                     </div>
-                    <span className="mattemagi-eq-op font-black">+</span>
+                    <span className="mattemagi-eq-op font-black">{currentQ.operator}</span>
                     <div className="mattemagi-obj-group">
                       {Array.from({ length: currentQ.num2 }).map((_, i) => (
                         <span key={`b-${i}`}>{currentQ.emoji}</span>
@@ -311,7 +302,7 @@ export default function MattemagiLevel({
 
                   <div className="mattemagi-eq">
                     <span>{currentQ.num1}</span>
-                    <span className="mattemagi-eq-op">+</span>
+                    <span className="mattemagi-eq-op">{currentQ.operator}</span>
                     <span>{currentQ.num2}</span>
                     <span className="mattemagi-eq-op">=</span>
                     <span>?</span>
@@ -388,9 +379,11 @@ export default function MattemagiLevel({
 
 function CompletionBoard({
   stars,
+  levelTitle,
   onBack,
 }: {
   stars: number;
+  levelTitle: string;
   onBack: () => void;
 }) {
   return (
@@ -398,12 +391,12 @@ function CompletionBoard({
       <div className="mattemagi-board" style={{ width: "72%", height: "78%" }}>
         <div className="mattemagi-parchment">
           <div style={{ fontSize: "4rem" }}>🏆</div>
-          <div className="mattemagi-wood mattemagi-hud-sub">NIVÅ 1 KLARAD!</div>
+          <div className="mattemagi-wood mattemagi-hud-sub">{levelTitle} klarad!</div>
           <h2 className="mattemagi-eq" style={{ fontSize: "2.6rem" }}>
             Hurra! Du är en Mattemagiker!
           </h2>
           <p className="mattemagi-kicker">
-            Du klarade alla 5 frågor i Mattemagi och samlade massor av stjärnglans!
+            Du klarade alla 5 frågor och samlade massor av stjärnglans!
           </p>
           <div className="mattemagi-wood mattemagi-hud-stat">
             <span>⭐</span>
