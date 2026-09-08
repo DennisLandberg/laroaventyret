@@ -75,7 +75,6 @@ export default function MattemagiLevel({
 
   const currentQ = questions[currentQuestionIndex];
 
-  // Focus input on question change
   useEffect(() => {
     if (!isCompleted && !isAdvancing) {
       inputRef.current?.focus();
@@ -132,7 +131,6 @@ export default function MattemagiLevel({
     const parsedAnswer = parseInt(userAnswer.trim(), 10);
 
     if (parsedAnswer === currentQ.answer) {
-      // Correct answer
       const newStars = stars + 1;
       setStars(newStars);
       setFeedback({
@@ -153,9 +151,8 @@ export default function MattemagiLevel({
           setIsCompleted(true);
           setIsAdvancing(false);
         }
-      }, 1400);
+      }, 800);
     } else {
-      // Wrong answer
       let newHearts = hearts - 1;
       let extraMessage = "";
 
@@ -174,220 +171,454 @@ export default function MattemagiLevel({
     }
   };
 
-  // Success screen
-  if (isCompleted) {
-    return (
-      <div className="w-full max-w-2xl mx-auto bg-white/95 backdrop-blur-md rounded-3xl p-8 sm:p-12 shadow-2xl border-4 border-amber-300 text-center animate-fade-in">
-        <div className="text-6xl sm:text-7xl mb-4 animate-bounce">🏆</div>
-        <div className="inline-block px-5 py-2 bg-yellow-200 text-yellow-900 rounded-full font-black text-sm sm:text-base mb-3 shadow-sm">
-          NIVÅ 1 KLARAD! 🌟
-        </div>
-        <h2 className="text-3xl sm:text-5xl font-black text-slate-800 mb-4">
-          Hurra! Du är en Mattemagiker!
-        </h2>
-        <p className="text-lg sm:text-xl text-slate-600 mb-8 max-w-md mx-auto">
-          Du klarade alla 5 frågor i Mattemagi och samlade massor av stjärnglans!
-        </p>
+  const nudgeAnswer = (delta: number) => {
+    const current = parseInt(userAnswer.trim(), 10);
+    const base = Number.isFinite(current) ? current : 0;
+    const next = Math.min(20, Math.max(0, base + delta));
+    setUserAnswer(String(next));
+  };
 
-        {/* Total Stars Box */}
-        <div className="inline-flex items-center gap-3 bg-amber-100 border-3 border-amber-400 px-8 py-4 rounded-3xl shadow-inner mb-8 text-2xl sm:text-3xl font-black text-amber-900">
-          <span className="text-4xl animate-pulse">⭐</span>
-          <span>{stars} stjärnor totalt</span>
-        </div>
-
-        {/* Return Button */}
-        <div>
-          <button
-            onClick={() => onBackToMap(stars)}
-            className="w-full sm:w-auto px-8 py-5 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-600 hover:to-teal-600 text-white font-black text-xl sm:text-2xl rounded-full shadow-xl hover:shadow-emerald-200/80 transition-all transform hover:-translate-y-1 active:scale-95 cursor-pointer border-4 border-emerald-300 inline-flex items-center justify-center gap-3"
-          >
-            <span>🪄</span>
-            <span>Tillbaka till Mattehuset</span>
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const ladybugLine = isLoadingHint
+    ? "Nyckelpigan tänker... ✨"
+    : feedback?.type === "success"
+      ? "Rätt! Fantastiskt! ⭐"
+      : feedback?.type === "error"
+        ? "Nästan! Försök en gång till! ❤️"
+        : showHint
+          ? hintCache[currentQuestionIndex] || currentQ.fallbackHint
+          : "Du klarar det!\nRäkna äpplena\nså ser du! ❤️";
 
   return (
-    <div className="w-full max-w-3xl mx-auto flex flex-col items-center">
-      {/* Top Bar: Navigation, Question Progress, Hearts, and Stars */}
-      <div className="w-full bg-white/90 backdrop-blur-md rounded-3xl p-4 sm:p-6 shadow-lg border-2 border-orange-200 mb-8 flex flex-wrap items-center justify-between gap-4">
-        {/* Return button */}
-        <button
-          onClick={() => onBackToMap(stars)}
-          className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-full text-sm sm:text-base transition-colors border border-slate-300"
-          title="Gå tillbaka till Mattehuset"
-        >
-          <span>⬅️</span>
-          <span>Tillbaka</span>
-        </button>
-
-        {/* Current Question Indicator */}
-        <div className="flex flex-col items-center">
-          <span className="text-xs sm:text-sm font-extrabold uppercase text-amber-800 tracking-wider">
-            Mattemagi
-          </span>
-          <span className="text-base sm:text-xl font-black text-slate-800">
-            Fråga {currentQuestionIndex + 1} av {questions.length}
-          </span>
+    <div className="mattemagi-scene">
+      <div className="mattemagi-room" aria-hidden>
+        <div className="mattemagi-shelf" style={{ left: "2.5%" }}>
+          <span style={{ background: "#c44a3a" }} />
+          <span style={{ background: "#355f9a" }} />
+          <span style={{ background: "#3d8a46" }} />
+          <span style={{ background: "#7a3ea0" }} />
+          <span style={{ background: "#c47a28" }} />
+          <span style={{ background: "#2f7a6a" }} />
         </div>
+        <div className="mattemagi-shelf" style={{ right: "2.5%" }}>
+          <span style={{ background: "#355f9a" }} />
+          <span style={{ background: "#c44a3a" }} />
+          <span style={{ background: "#c47a28" }} />
+          <span style={{ background: "#3d8a46" }} />
+          <span style={{ background: "#7a3ea0" }} />
+        </div>
+        <div className="mattemagi-window">
+          <span className="mattemagi-tower" />
+        </div>
+        <div className="mattemagi-lantern" style={{ left: "11%", top: "12%" }} />
+        <div className="mattemagi-lantern" style={{ right: "11%", top: "38%" }} />
+        <div className="mattemagi-floor-books">
+          <span>ÄVENTYR ❤️</span>
+          <span>ÄR ETT</span>
+          <span>MATEMATIK</span>
+        </div>
+        <div className="mattemagi-motto">Små steg leder till stora framsteg!</div>
+        <div className="mattemagi-rug" />
+      </div>
 
-        {/* Hearts and Stars Display */}
-        <div className="flex items-center gap-4">
-          {/* Hearts */}
-          <div
-            className="flex items-center gap-1 bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-full"
-            title={`${hearts} hjärtan kvar`}
-          >
-            {[1, 2, 3].map((heartIndex) => (
-              <span
-                key={heartIndex}
-                className={`text-xl sm:text-2xl transition-transform ${
-                  heartIndex <= hearts
-                    ? "scale-100"
-                    : "opacity-30 grayscale scale-90"
-                }`}
+      <div className="mattemagi-stage">
+        <VineFrame />
+
+        {isCompleted ? (
+          <CompletionBoard stars={stars} onBack={() => onBackToMap(stars)} />
+        ) : (
+          <>
+            <header className="mattemagi-hud">
+              <button
+                type="button"
+                className="mattemagi-wood mattemagi-hud-back"
+                onClick={() => onBackToMap(stars)}
+                title="Gå tillbaka till Mattehuset"
               >
-                ❤️
-              </span>
-            ))}
-          </div>
+                ← Tillbaka
+              </button>
 
-          {/* Stars */}
-          <div className="flex items-center gap-1.5 bg-amber-100 border border-amber-300 px-3.5 py-1.5 rounded-full font-black text-amber-900 text-base sm:text-lg">
-            <span className="text-xl">⭐</span>
-            <span>{stars}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Progress Dots */}
-      <div className="w-full flex justify-center items-center gap-3 mb-6">
-        {questions.map((_, idx) => (
-          <div
-            key={idx}
-            className={`h-3.5 rounded-full transition-all duration-300 ${
-              idx === currentQuestionIndex
-                ? "w-10 bg-amber-500 shadow-md"
-                : idx < currentQuestionIndex
-                ? "w-3.5 bg-emerald-500"
-                : "w-3.5 bg-slate-300"
-            }`}
-          />
-        ))}
-      </div>
-
-      {/* Main Question Card */}
-      <div className="w-full bg-white rounded-3xl p-6 sm:p-12 shadow-2xl border-4 border-amber-300 relative text-center">
-        {/* Sparkle Badges */}
-        <div className="text-sm font-extrabold text-amber-800 bg-amber-100 border border-amber-300 inline-block px-4 py-1 rounded-full mb-6">
-          🪄 Trolla fram rätt svar!
-        </div>
-
-        {/* Visual helper objects */}
-        <div className="flex justify-center items-center gap-2 sm:gap-4 mb-6 flex-wrap select-none text-2xl sm:text-3xl">
-          <div className="flex gap-1 bg-amber-50 p-2 sm:p-3 rounded-2xl border border-amber-200">
-            {Array.from({ length: currentQ.num1 }).map((_, i) => (
-              <span key={i} className="animate-pulse">
-                {currentQ.emoji}
-              </span>
-            ))}
-          </div>
-          <span className="text-2xl sm:text-3xl font-black text-amber-600">
-            +
-          </span>
-          <div className="flex gap-1 bg-amber-50 p-2 sm:p-3 rounded-2xl border border-amber-200">
-            {Array.from({ length: currentQ.num2 }).map((_, i) => (
-              <span key={i} className="animate-pulse">
-                {currentQ.emoji}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        {/* Math Equation */}
-        <div className="text-4xl sm:text-6xl font-black text-slate-800 mb-8 flex items-center justify-center gap-3 sm:gap-5">
-          <span>{currentQ.num1}</span>
-          <span className="text-amber-500">+</span>
-          <span>{currentQ.num2}</span>
-          <span className="text-slate-400">=</span>
-          <span className="text-amber-600 font-extrabold">?</span>
-        </div>
-
-        {/* Answer Form */}
-        <form
-          onSubmit={handleSubmit}
-          className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto mb-6"
-        >
-          <input
-            ref={inputRef}
-            type="number"
-            inputMode="numeric"
-            min={0}
-            max={20}
-            value={userAnswer}
-            onChange={(e) => setUserAnswer(e.target.value)}
-            placeholder="?"
-            disabled={isAdvancing}
-            aria-label="Ditt svar"
-            className="w-32 sm:w-36 h-20 text-4xl font-black text-center text-slate-800 bg-amber-50 border-4 border-amber-400 focus:border-amber-500 focus:bg-white rounded-2xl shadow-inner focus:outline-none focus:ring-4 focus:ring-amber-200 transition-all disabled:opacity-50"
-          />
-
-          <button
-            type="submit"
-            disabled={isAdvancing || !userAnswer.trim()}
-            className="w-full sm:w-auto px-8 h-20 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 active:scale-95 disabled:opacity-40 disabled:pointer-events-none text-white font-black text-2xl rounded-2xl shadow-xl transition-all border-4 border-emerald-300 cursor-pointer flex items-center justify-center gap-2"
-          >
-            <span>Svara</span>
-            <span>➔</span>
-          </button>
-        </form>
-
-        {/* Feedback Message */}
-        {feedback && (
-          <div
-            role="alert"
-            className={`p-4 rounded-2xl mb-4 font-bold text-base sm:text-lg border-2 inline-block max-w-md mx-auto transition-all ${
-              feedback.type === "success"
-                ? "bg-emerald-100 border-emerald-400 text-emerald-900 animate-bounce"
-                : "bg-rose-100 border-rose-300 text-rose-900"
-            }`}
-          >
-            {feedback.message}
-          </div>
-        )}
-
-        {/* Hint Section */}
-        <div className="mt-4 pt-6 border-t border-slate-100">
-          <button
-            type="button"
-            onClick={handleToggleHint}
-            className="inline-flex items-center gap-2 text-amber-800 hover:text-amber-950 font-bold text-sm sm:text-base bg-amber-100 hover:bg-amber-200 px-4 py-2 rounded-full transition-colors border border-amber-300 cursor-pointer"
-          >
-            <span>💡</span>
-            <span>{showHint ? "Göm ledtråd" : "Behöver du en ledtråd?"}</span>
-          </button>
-
-          {showHint && (
-            <div className="mt-3 p-4 bg-yellow-50 border-2 border-dashed border-yellow-300 rounded-2xl max-w-md mx-auto text-slate-700 text-sm sm:text-base font-semibold">
-              {isLoadingHint ? (
-                <div className="flex items-center justify-center gap-2 py-2 text-amber-800 font-bold">
-                  <span className="text-xl animate-spin">🪄</span>
-                  <span>Trollar fram en magisk ledtråd...</span>
+              <div className="flex flex-col items-center">
+                <div className="mattemagi-wood mattemagi-hud-title">MATTEMAGI</div>
+                <div className="mattemagi-wood mattemagi-hud-sub">
+                  Fråga {currentQuestionIndex + 1} av {questions.length}
                 </div>
-              ) : (
-                <>
-                  <p className="flex items-center justify-center gap-2 text-yellow-900 font-bold mb-1">
-                    <span>🪄 Magisk ledtråd:</span>
-                  </p>
-                  <p>{hintCache[currentQuestionIndex] || currentQ.fallbackHint}</p>
-                </>
-              )}
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div
+                  className="mattemagi-wood mattemagi-hud-stat"
+                  title={`${hearts} hjärtan kvar`}
+                >
+                  {[1, 2, 3].map((heartIndex) => (
+                    <span
+                      key={heartIndex}
+                      style={{
+                        opacity: heartIndex <= hearts ? 1 : 0.28,
+                        filter: heartIndex <= hearts ? "none" : "grayscale(1)",
+                        display: "inline-block",
+                        animation:
+                          feedback?.type === "error" && heartIndex === hearts + 1
+                            ? "mattemagi-heart-pulse 0.55s ease-in-out"
+                            : undefined,
+                      }}
+                    >
+                      ❤️
+                    </span>
+                  ))}
+                </div>
+                <div
+                  className="mattemagi-wood mattemagi-hud-stat"
+                  style={{
+                    animation:
+                      feedback?.type === "success"
+                        ? "mattemagi-star-bounce 0.7s ease-in-out"
+                        : undefined,
+                  }}
+                >
+                  <span>⭐</span>
+                  <span>{stars}</span>
+                </div>
+              </div>
+            </header>
+
+            <div className="mattemagi-body">
+              <div className="mattemagi-npc">
+                <div className="mattemagi-bubble">{ladybugLine}</div>
+                <WizardLadybug mood={feedback?.type === "success" ? "happy" : "idle"} />
+              </div>
+
+              <div
+                className={`mattemagi-board ${feedback?.type === "success" ? "is-correct" : ""}`}
+              >
+                <BoardVines />
+                {feedback?.type === "success" ? <SparkleBurst /> : null}
+                <div className="mattemagi-parchment">
+                  <div className="mattemagi-kicker">✨ Trolla fram rätt svar!</div>
+
+                  <div className="mattemagi-objects">
+                    <div className="mattemagi-obj-group">
+                      {Array.from({ length: currentQ.num1 }).map((_, i) => (
+                        <span key={`a-${i}`}>{currentQ.emoji}</span>
+                      ))}
+                    </div>
+                    <span className="mattemagi-eq-op font-black">+</span>
+                    <div className="mattemagi-obj-group">
+                      {Array.from({ length: currentQ.num2 }).map((_, i) => (
+                        <span key={`b-${i}`}>{currentQ.emoji}</span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="mattemagi-eq">
+                    <span>{currentQ.num1}</span>
+                    <span className="mattemagi-eq-op">+</span>
+                    <span>{currentQ.num2}</span>
+                    <span className="mattemagi-eq-op">=</span>
+                    <span>?</span>
+                  </div>
+
+                  <form onSubmit={handleSubmit} className="mattemagi-controls">
+                    <div
+                      className={`mattemagi-stone ${feedback?.type === "error" ? "is-wrong" : ""}`}
+                    >
+                      <input
+                        ref={inputRef}
+                        type="number"
+                        inputMode="numeric"
+                        min={0}
+                        max={20}
+                        value={userAnswer}
+                        onChange={(e) => setUserAnswer(e.target.value)}
+                        placeholder="?"
+                        disabled={isAdvancing}
+                        aria-label="Ditt svar"
+                        className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      />
+                      <div className="mattemagi-step">
+                        <button
+                          type="button"
+                          aria-label="Öka talet"
+                          disabled={isAdvancing}
+                          onClick={() => nudgeAnswer(1)}
+                        >
+                          ▲
+                        </button>
+                        <button
+                          type="button"
+                          aria-label="Minska talet"
+                          disabled={isAdvancing}
+                          onClick={() => nudgeAnswer(-1)}
+                        >
+                          ▼
+                        </button>
+                      </div>
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="mattemagi-svara"
+                      disabled={isAdvancing || !userAnswer.trim()}
+                    >
+                      Svara ➜
+                    </button>
+                  </form>
+
+                  {feedback && (
+                    <div role="alert" className="sr-only">
+                      {feedback.message}
+                    </div>
+                  )}
+
+                  <button
+                    type="button"
+                    className="mattemagi-wood mattemagi-hint"
+                    onClick={handleToggleHint}
+                  >
+                    💡 Fråga nyckelpigan om en ledtråd!
+                  </button>
+                </div>
+              </div>
             </div>
-          )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function CompletionBoard({
+  stars,
+  onBack,
+}: {
+  stars: number;
+  onBack: () => void;
+}) {
+  return (
+    <div className="mattemagi-body" style={{ alignItems: "center" }}>
+      <div className="mattemagi-board" style={{ width: "72%", height: "78%" }}>
+        <div className="mattemagi-parchment">
+          <div style={{ fontSize: "4rem" }}>🏆</div>
+          <div className="mattemagi-wood mattemagi-hud-sub">NIVÅ 1 KLARAD!</div>
+          <h2 className="mattemagi-eq" style={{ fontSize: "2.6rem" }}>
+            Hurra! Du är en Mattemagiker!
+          </h2>
+          <p className="mattemagi-kicker">
+            Du klarade alla 5 frågor i Mattemagi och samlade massor av stjärnglans!
+          </p>
+          <div className="mattemagi-wood mattemagi-hud-stat">
+            <span>⭐</span>
+            <span>{stars} stjärnor totalt</span>
+          </div>
+          <button type="button" className="mattemagi-svara" onClick={onBack}>
+            Tillbaka till Mattehuset
+          </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+function WizardLadybug({ mood }: { mood: "idle" | "happy" }) {
+  return (
+    <div className={`mattemagi-ladybug ${mood === "happy" ? "is-happy" : ""}`}>
+      <div className="relative mx-auto h-[210px] w-[168px]">
+        <div
+          className="absolute left-[52px] top-0 h-[70px] w-[64px]"
+          style={{
+            background: "#7b3db8",
+            clipPath: "polygon(50% 0, 100% 100%, 0 100%)",
+            boxShadow: "inset 0 0 0 4px #4a1d78",
+          }}
+        />
+        <div className="absolute left-[78px] top-[28px] h-[12px] w-[14px] bg-[#f0d48a]" />
+        <div className="absolute left-[86px] top-[8px] h-[10px] w-[10px] rounded-sm bg-[#f4efe4]" />
+        <div
+          className="absolute left-[28px] top-[62px] h-[92px] w-[112px] bg-[#e23b32]"
+          style={{ boxShadow: "inset 0 0 0 5px #7a1814" }}
+        />
+        <div className="absolute left-[48px] top-[84px] h-[16px] w-[16px] bg-[#1a1210]" />
+        <div className="absolute left-[86px] top-[78px] h-[14px] w-[14px] bg-[#1a1210]" />
+        <div className="absolute left-[72px] top-[108px] h-[14px] w-[14px] bg-[#1a1210]" />
+        <div className="absolute left-[58px] top-[88px] h-[14px] w-[14px] bg-white" />
+        <div className="absolute left-[90px] top-[88px] h-[14px] w-[14px] bg-white" />
+        <div className="absolute left-[63px] top-[93px] h-[5px] w-[5px] bg-[#1a1210]" />
+        <div className="absolute left-[95px] top-[93px] h-[5px] w-[5px] bg-[#1a1210]" />
+        <div className="absolute left-[136px] top-[108px] h-[8px] w-[28px] bg-[#6b4326]" />
+        <div className="absolute left-[156px] top-[94px] h-[16px] w-[16px] bg-[#f3d27a] shadow-[0_0_10px_#f3d27a]" />
+        <div className="absolute bottom-0 left-[18px] flex w-[132px] flex-col-reverse">
+          <div className="h-[16px] bg-[#3d6b3a] text-center text-[9px] font-black leading-[16px] text-amber-50">
+            DU KAN!
+          </div>
+          <div className="h-[16px] bg-[#5a3d8a] text-center text-[9px] font-black leading-[16px] text-amber-50">
+            RÄKNA
+          </div>
+          <div className="h-[16px] bg-[#355f9a] text-center text-[9px] font-black leading-[16px] text-amber-50">
+            TAL
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SparkleBurst() {
+  const sparks = [
+    { left: "12%", top: "16%", delay: "0s" },
+    { left: "78%", top: "14%", delay: "0.08s" },
+    { left: "48%", top: "6%", delay: "0.04s" },
+    { left: "22%", top: "38%", delay: "0.12s" },
+    { left: "70%", top: "36%", delay: "0.16s" },
+    { left: "58%", top: "20%", delay: "0.1s" },
+  ];
+  return (
+    <div className="pointer-events-none absolute inset-0 z-10 overflow-hidden">
+      {sparks.map((s, i) => (
+        <span
+          key={i}
+          className="absolute text-2xl text-amber-300"
+          style={{
+            left: s.left,
+            top: s.top,
+            animation: `mattemagi-spark 0.75s ease-out ${s.delay} both`,
+          }}
+        >
+          ★
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function PixelBloom({
+  color,
+  x,
+  y,
+  size = 14,
+}: {
+  color: string;
+  x: string;
+  y: string;
+  size?: number;
+}) {
+  const p = Math.max(4, Math.round(size * 0.38));
+  return (
+    <div className="absolute" style={{ left: x, top: y, width: size, height: size }}>
+      <div className="absolute left-1/2 top-0 -translate-x-1/2" style={{ width: p, height: p, background: color }} />
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2" style={{ width: p, height: p, background: color }} />
+      <div className="absolute left-0 top-1/2 -translate-y-1/2" style={{ width: p, height: p, background: color }} />
+      <div className="absolute right-0 top-1/2 -translate-y-1/2" style={{ width: p, height: p, background: color }} />
+      <div
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+        style={{ width: p, height: p, background: "#f4e27a" }}
+      />
+    </div>
+  );
+}
+
+function PixelLeaf({ x, y, rot = 0 }: { x: string; y: string; rot?: number }) {
+  return (
+    <div
+      className="absolute h-[12px] w-[18px] bg-[#3d8a46]"
+      style={{
+        left: x,
+        top: y,
+        transform: `rotate(${rot}deg)`,
+        boxShadow: "inset 2px 0 0 #2f6e38",
+      }}
+    />
+  );
+}
+
+function BoardVines() {
+  const blooms = [
+    { color: "#e86aa0", x: "-2%", y: "8%", size: 16 },
+    { color: "#f4efe4", x: "4%", y: "-2%", size: 14 },
+    { color: "#f2d24a", x: "18%", y: "-3%", size: 13 },
+    { color: "#e86aa0", x: "38%", y: "-4%", size: 17 },
+    { color: "#c084fc", x: "62%", y: "-3%", size: 14 },
+    { color: "#f4efe4", x: "82%", y: "-2%", size: 15 },
+    { color: "#e86aa0", x: "96%", y: "10%", size: 16 },
+    { color: "#f2d24a", x: "97%", y: "42%", size: 14 },
+    { color: "#e86aa0", x: "95%", y: "72%", size: 15 },
+    { color: "#f4efe4", x: "-1%", y: "46%", size: 13 },
+    { color: "#e86aa0", x: "-2%", y: "78%", size: 15 },
+  ];
+  const leaves = [
+    { x: "8%", y: "-1%", rot: -18 },
+    { x: "28%", y: "-2%", rot: 12 },
+    { x: "52%", y: "-2%", rot: -8 },
+    { x: "74%", y: "-1%", rot: 20 },
+    { x: "-2%", y: "22%", rot: 80 },
+    { x: "-3%", y: "58%", rot: 95 },
+    { x: "97%", y: "24%", rot: -85 },
+    { x: "98%", y: "58%", rot: -70 },
+  ];
+  return (
+    <div className="mattemagi-board-vine" aria-hidden>
+      {leaves.map((l, i) => (
+        <PixelLeaf key={`bl-${i}`} x={l.x} y={l.y} rot={l.rot} />
+      ))}
+      {blooms.map((b, i) => (
+        <PixelBloom key={`bb-${i}`} color={b.color} x={b.x} y={b.y} size={b.size} />
+      ))}
+    </div>
+  );
+}
+
+function VineFrame() {
+  const blooms: { color: string; x: string; y: string; size?: number }[] = [
+    { color: "#e86aa0", x: "1%", y: "2%", size: 22 },
+    { color: "#f2d24a", x: "4%", y: "0.5%", size: 16 },
+    { color: "#f4efe4", x: "8%", y: "2%", size: 14 },
+    { color: "#e86aa0", x: "14%", y: "0.4%", size: 18 },
+    { color: "#c084fc", x: "48%", y: "0.5%", size: 15 },
+    { color: "#f2d24a", x: "72%", y: "0.6%", size: 16 },
+    { color: "#e86aa0", x: "88%", y: "1%", size: 20 },
+    { color: "#f4efe4", x: "93%", y: "0.4%", size: 15 },
+    { color: "#e86aa0", x: "95.5%", y: "1.5%", size: 18 },
+    { color: "#e86aa0", x: "1%", y: "20%", size: 16 },
+    { color: "#f2d24a", x: "0.4%", y: "48%", size: 18 },
+    { color: "#e86aa0", x: "1%", y: "76%", size: 16 },
+    { color: "#f4efe4", x: "0.6%", y: "92%", size: 14 },
+    { color: "#f4efe4", x: "95.5%", y: "18%", size: 15 },
+    { color: "#c084fc", x: "96%", y: "46%", size: 14 },
+    { color: "#e86aa0", x: "95%", y: "74%", size: 18 },
+    { color: "#f2d24a", x: "6%", y: "94%", size: 16 },
+    { color: "#e86aa0", x: "24%", y: "95%", size: 18 },
+    { color: "#f4efe4", x: "62%", y: "94.5%", size: 14 },
+    { color: "#c084fc", x: "86%", y: "94.5%", size: 16 },
+    { color: "#e86aa0", x: "92%", y: "93%", size: 20 },
+  ];
+  const leaves: { x: string; y: string; rot: number }[] = [
+    { x: "3%", y: "8%", rot: -20 },
+    { x: "8%", y: "5%", rot: 15 },
+    { x: "14%", y: "2%", rot: -10 },
+    { x: "30%", y: "1%", rot: 25 },
+    { x: "40%", y: "2%", rot: -15 },
+    { x: "58%", y: "1%", rot: 10 },
+    { x: "76%", y: "2%", rot: -25 },
+    { x: "90%", y: "6%", rot: 18 },
+    { x: "2%", y: "16%", rot: 70 },
+    { x: "1%", y: "34%", rot: 85 },
+    { x: "2%", y: "58%", rot: 95 },
+    { x: "1.5%", y: "82%", rot: 80 },
+    { x: "96%", y: "14%", rot: -80 },
+    { x: "97%", y: "32%", rot: -90 },
+    { x: "96%", y: "56%", rot: -85 },
+    { x: "97%", y: "80%", rot: -70 },
+    { x: "16%", y: "93%", rot: 10 },
+    { x: "42%", y: "95%", rot: -8 },
+    { x: "54%", y: "94%", rot: 12 },
+    { x: "72%", y: "93%", rot: -18 },
+  ];
+  return (
+    <div className="mattemagi-vine">
+      {leaves.map((l, i) => (
+        <PixelLeaf key={`l-${i}`} x={l.x} y={l.y} rot={l.rot} />
+      ))}
+      {blooms.map((b, i) => (
+        <PixelBloom key={`b-${i}`} color={b.color} x={b.x} y={b.y} size={b.size} />
+      ))}
     </div>
   );
 }
