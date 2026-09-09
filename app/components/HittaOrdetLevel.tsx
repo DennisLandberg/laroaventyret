@@ -30,7 +30,7 @@ function loadWordChallenges(): Promise<LoadedChallenges> {
     return inflightWordChallenges;
   }
 
-  inflightWordChallenges = (async () => {
+  const request = (async (): Promise<LoadedChallenges> => {
     const response = await fetch("/api/word-challenges", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -48,7 +48,7 @@ function loadWordChallenges(): Promise<LoadedChallenges> {
       throw new Error("Ogiltiga ordgåtor");
     }
 
-    const source =
+    const source: LoadedChallenges["source"] =
       data &&
       typeof data === "object" &&
       "source" in data &&
@@ -57,19 +57,19 @@ function loadWordChallenges(): Promise<LoadedChallenges> {
         : "fallback";
 
     return { questions: parsed, source };
-  })()
-    .catch((error) => {
-      console.warn("Använder lokala ordgåtor som reserv:", error);
-      return {
-        questions: getHittaOrdetQuestions(),
-        source: "fallback" as const,
-      };
-    })
-    .finally(() => {
-      inflightWordChallenges = null;
-    });
+  })().catch((error): LoadedChallenges => {
+    console.warn("Använder lokala ordgåtor som reserv:", error);
+    return {
+      questions: getHittaOrdetQuestions(),
+      source: "fallback",
+    };
+  });
 
-  return inflightWordChallenges;
+  inflightWordChallenges = request.finally(() => {
+    inflightWordChallenges = null;
+  });
+
+  return request;
 }
 
 export default function HittaOrdetLevel({
