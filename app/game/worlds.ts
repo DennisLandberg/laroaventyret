@@ -652,16 +652,16 @@ export const WORLDS: Record<WorldId, WorldConfig> = {
     spawnPosition: { x: 210, y: 300 },
     groundBgClass: "bg-green-800",
     paths: [
-      { x: 130, y: 280, width: 440, height: 44, type: "dirt" },
+      { x: 130, y: 280, width: 485, height: 44, type: "dirt" },
     ],
     scenery: [
       {
         id: "word_house",
         type: "word_house",
-        x: 540,
-        y: 190,
-        width: 150,
-        height: 130,
+        x: 548,
+        y: 198,
+        width: 155,
+        height: 80,
         label: "Ordhuset",
       },
       { id: "o_tree_1", type: "tree", x: 40, y: 50, width: 50, height: 60 },
@@ -674,7 +674,7 @@ export const WORLDS: Record<WorldId, WorldConfig> = {
       { id: "o_tree_8", type: "tree", x: 700, y: 400, width: 50, height: 60 },
     ],
     obstacles: [
-      { x: 540, y: 190, width: 150, height: 110 },
+      { x: 548, y: 198, width: 155, height: 80 },
       { x: 40, y: 50, width: 50, height: 50 },
       { x: 200, y: 60, width: 50, height: 50 },
       { x: 380, y: 50, width: 50, height: 50 },
@@ -702,7 +702,7 @@ export const WORLDS: Record<WorldId, WorldConfig> = {
         id: "word_house_door",
         type: "building",
         x: 615,
-        y: 305,
+        y: 310,
         radius: 65,
         label: "Ordhuset",
         prompt: "Tryck E för att gå in i Ordhuset",
@@ -822,6 +822,7 @@ export const WORLDS: Record<WorldId, WorldConfig> = {
         label: "Nivå 1: Hitta ordet",
         prompt: "Tryck E för att spela Hitta ordet",
         action: "start_ordmagi",
+        ordMode: "hitta_ordet",
       },
       {
         id: "station_saknade_bokstaver",

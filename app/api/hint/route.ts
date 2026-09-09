@@ -5,7 +5,7 @@ export async function POST(request: Request) {
   let isSubtraction = false;
   try {
     const body = await request.json();
-    const { num1, num2, operator } = body;
+    const { num1, num2, operator, story } = body;
 
     if (typeof num1 !== "number" || typeof num2 !== "number") {
       return NextResponse.json(
@@ -20,6 +20,7 @@ export async function POST(request: Request) {
     const equation = isSubtractionOp
       ? `${num1} - ${num2}`
       : `${num1} + ${num2}`;
+    const isStoryHint = Boolean(story);
     const fallbackHint = isSubtractionOp
       ? `Börja på ${num1} och räkna ${num2} steg bakåt. Du klarar det! 🪄`
       : `Börja på ${Math.max(num1, num2)} och räkna ${Math.min(num1, num2)} steg framåt på dina fingrar! Du klarar det! 🪄`;
@@ -37,6 +38,7 @@ export async function POST(request: Request) {
     const prompt = isSubtractionOp
       ? `Du är en pedagogisk och lekfull trollkarl i barnspelet Läroäventyret för barn i åldern 6-9 år.
 Barnet behöver en ledtråd för subtraktionsuppgiften: ${equation}.
+${isStoryHint ? "Barnet har en sagouppgift. Hjälp dem förstå att något tas bort. Upprepa gärna de två talen." : ""}
 Skriv en mycket kort och uppmuntrande ledtråd på enkel svenska (max 1–2 korta meningar).
 
 Viktiga regler:
@@ -45,6 +47,7 @@ Viktiga regler:
 3. Använd en varm, positiv och magisk ton med 1 passande emoji (t.ex. 🪄, ✨, 🖐️, 🍎).`
       : `Du är en pedagogisk och lekfull trollkarl i barnspelet Läroäventyret för barn i åldern 6-9 år.
 Barnet behöver en ledtråd för additionsuppgiften: ${equation}.
+${isStoryHint ? "Barnet har en sagouppgift. Hjälp dem förstå att de ska lägga ihop. Upprepa gärna de två talen." : ""}
 Skriv en mycket kort och uppmuntrande ledtråd på enkel svenska (max 1–2 korta meningar).
 
 Viktiga regler:

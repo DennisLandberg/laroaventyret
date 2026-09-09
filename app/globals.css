@@ -444,6 +444,43 @@ body {
   color: #4a2e14;
 }
 
+.mattemagi-board.is-story {
+  box-shadow:
+    0 0 0 8px #5a2a86,
+    0 0 0 14px #24140c,
+    0 10px 0 #140c08;
+}
+
+.mattemagi-board.is-story .mattemagi-parchment {
+  background: #f8e8c8;
+  box-shadow: inset 0 0 0 4px #b86ad0, inset 0 0 0 10px #f0d48a;
+}
+
+.mattemagi-story-heading {
+  font-size: clamp(1.05rem, 2.4vw, 1.45rem);
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #f4efe4;
+  padding: 10px 18px;
+  max-width: 96%;
+  line-height: 1.25;
+}
+
+.mattemagi-story {
+  max-width: 94%;
+  font-size: clamp(1.55rem, 3.4vw, 2.25rem);
+  font-weight: 900;
+  color: #2a160c;
+  line-height: 1.35;
+  text-wrap: pretty;
+}
+
+.mattemagi-story-loading {
+  font-size: clamp(1.25rem, 2.6vw, 1.7rem);
+  color: #6b3a12;
+}
+
 .mattemagi-objects {
   display: flex;
   align-items: center;
@@ -677,5 +714,531 @@ body {
   .mattemagi-hud-title {
     font-size: 1.35rem;
     padding: 8px 16px;
+  }
+}
+
+/* --- Ordlandet library screens (Hitta ordet / Saknade bokstäver / Bygg meningen) --- */
+
+.ordmagi-scene {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  image-rendering: pixelated;
+}
+
+.ordmagi-room {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(#1c2a18 0 7%, #3a2a1c 7% 74%, #4a3420 74% 80%, #5a4028 80%);
+  background-color: #3a2a1c;
+}
+
+.ordmagi-room::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 26%;
+  background: repeating-linear-gradient(
+    90deg,
+    #6b4a2c 0 28px,
+    #5a3c22 28px 30px,
+    #7a5434 30px 56px,
+    #5a3c22 56px 58px
+  );
+}
+
+.ordmagi-room::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow:
+    inset 0 0 0 8px #1a2814,
+    inset 0 0 0 14px #2f5a32,
+    inset 0 0 0 18px #245028;
+}
+
+.ordmagi-shelf {
+  position: absolute;
+  top: 14%;
+  width: 52px;
+  height: 48%;
+  background: #3d2414;
+  box-shadow: inset 0 0 0 3px #2a1810;
+}
+
+.ordmagi-shelf.is-left {
+  left: 1.6%;
+}
+
+.ordmagi-shelf.is-right {
+  right: 1.6%;
+}
+
+.ordmagi-shelf span {
+  display: block;
+  height: 10px;
+  margin: 7px 6px 0;
+  box-shadow: inset 0 0 0 1px #2a1810;
+}
+
+.ordmagi-rug {
+  position: absolute;
+  left: 50%;
+  bottom: 3.5%;
+  width: min(40vw, 380px);
+  height: min(14vh, 110px);
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, #6b8a3a 0 22%, #3d5a28 22% 74%, #2a3c18 74%);
+  box-shadow: inset 0 0 0 6px #6b4326;
+}
+
+.ordmagi-stage {
+  position: relative;
+  z-index: 2;
+  width: min(92vw, 1360px);
+  height: min(96vh, 960px);
+  display: flex;
+  flex-direction: column;
+  padding: 14px 18px 10px;
+}
+
+.ordmagi-hud {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+
+.ordmagi-wood {
+  color: #fff6e4;
+  font-weight: 900;
+  image-rendering: pixelated;
+  background: repeating-linear-gradient(
+    180deg,
+    #8b5a32 0 10px,
+    #7a4c28 10px 12px,
+    #9a6840 12px 20px
+  );
+  box-shadow:
+    inset 0 3px 0 #c49a68,
+    inset 0 -4px 0 #4a2a14,
+    inset 3px 0 0 #5c3418,
+    inset -3px 0 0 #5c3418,
+    0 0 0 4px #2a160c,
+    0 6px 0 #1a0e08;
+  border: 0;
+  cursor: pointer;
+}
+
+.ordmagi-wood:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.ordmagi-hud-back {
+  padding: 16px 26px;
+  font-size: 1.45rem;
+}
+
+.ordmagi-hud-title {
+  padding: 12px 36px;
+  font-size: 2rem;
+  letter-spacing: 0.04em;
+  cursor: default;
+}
+
+.ordmagi-hud-sub {
+  margin-top: 8px;
+  padding: 8px 18px;
+  font-size: 1.05rem;
+  cursor: default;
+}
+
+.ordmagi-hud-stat {
+  padding: 10px 16px;
+  font-size: 1.55rem;
+  cursor: default;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ordmagi-hud-heart.is-empty {
+  filter: grayscale(1) opacity(0.35);
+}
+
+.ordmagi-body {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0;
+}
+
+.ordmagi-board {
+  position: relative;
+  width: 78%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 22px;
+  background: repeating-linear-gradient(
+    90deg,
+    #6b4326 0 16px,
+    #5a361c 16px 18px
+  );
+  box-shadow:
+    inset 0 8px 0 #a06c40,
+    inset 0 -10px 0 #3d2414,
+    inset 8px 0 0 #4a2c16,
+    inset -8px 0 0 #4a2c16,
+    0 0 0 6px #24140c,
+    0 10px 0 #140c08;
+}
+
+.ordmagi-parchment {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-evenly;
+  padding: 16px 22px 12px;
+  background: #f3e4c4;
+  box-shadow:
+    inset 0 0 0 4px #3d6b3a,
+    inset 0 0 0 8px #c4a06a,
+    inset 0 0 0 12px #e8d4a8;
+  text-align: center;
+}
+
+.ordmagi-npc {
+  position: relative;
+  width: 22%;
+  min-width: 176px;
+  max-width: 250px;
+  margin-right: -44px;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+}
+
+.ordmagi-bubble {
+  position: relative;
+  margin-bottom: 8px;
+  padding: 12px 14px;
+  width: 100%;
+  background: #fff8e8;
+  color: #2a160c;
+  font-weight: 800;
+  font-size: 0.98rem;
+  line-height: 1.25;
+  box-shadow: inset 0 0 0 4px #2a160c, 0 4px 0 #1a0e08;
+}
+
+.ordmagi-bubble::after {
+  content: "";
+  position: absolute;
+  left: 28px;
+  bottom: -12px;
+  width: 16px;
+  height: 12px;
+  background: #fff8e8;
+  box-shadow: 4px 4px 0 #2a160c;
+  clip-path: polygon(0 0, 100% 0, 30% 100%);
+}
+
+.ordmagi-ladybug {
+  width: 100%;
+  animation: ladybug-bob 2.6s ease-in-out infinite;
+}
+
+.ordmagi-ladybug.is-happy {
+  animation: mattemagi-star-bounce 0.7s ease-in-out;
+}
+
+.ordmagi-kicker {
+  font-size: clamp(1.15rem, 2.4vw, 1.55rem);
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  color: #245028;
+}
+
+.ordmagi-clue {
+  max-width: 96%;
+  font-size: clamp(1.55rem, 3.2vw, 2.2rem);
+  font-weight: 900;
+  color: #2a160c;
+  line-height: 1.35;
+  text-wrap: pretty;
+}
+
+.ordmagi-puzzle {
+  max-width: 96%;
+  font-size: clamp(2.8rem, 6vw, 4.6rem);
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  color: #2a160c;
+  line-height: 1.1;
+}
+
+.ordmagi-page {
+  width: 94%;
+  min-height: 88px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 18px;
+  background: #f8edd4;
+  box-shadow: inset 0 0 0 3px #c4a06a, 4px 4px 0 #6b4326;
+  font-size: clamp(1.35rem, 2.8vw, 1.95rem);
+  font-weight: 900;
+  color: #2a160c;
+  line-height: 1.35;
+}
+
+.ordmagi-page.is-empty {
+  color: #8a6a40;
+}
+
+.ordmagi-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.ordmagi-label {
+  width: min(92%, 520px);
+  font-size: 1rem;
+  font-weight: 800;
+  color: #6b3a12;
+}
+
+.ordmagi-input {
+  margin-top: 8px;
+  width: 100%;
+  height: 72px;
+  border: 0;
+  background: #f8edd4;
+  color: #2a160c;
+  font-size: 2rem;
+  font-weight: 900;
+  text-align: center;
+  box-shadow:
+    inset 0 4px 0 #d4c09a,
+    inset 0 -4px 0 #c4a06a,
+    0 0 0 4px #6b4326,
+    0 6px 0 #24140c;
+}
+
+.ordmagi-input:focus {
+  outline: 3px solid #3d8a46;
+}
+
+.ordmagi-input:disabled {
+  opacity: 0.55;
+}
+
+.ordmagi-svara,
+.ordmagi-rensa {
+  border: 0;
+  cursor: pointer;
+  font-weight: 900;
+  color: #fff6e4;
+}
+
+.ordmagi-svara {
+  min-width: 180px;
+  height: 78px;
+  padding: 0 36px;
+  font-size: 1.85rem;
+  background: linear-gradient(#6fd484 0 22%, #3da85a 22% 78%, #2a7a40 78%);
+  box-shadow:
+    inset 0 5px 0 #b6f0c4,
+    inset 0 -6px 0 #1d5c30,
+    0 0 0 4px #143c20,
+    0 7px 0 #0c2414;
+}
+
+.ordmagi-rensa {
+  min-width: 140px;
+  height: 78px;
+  padding: 0 28px;
+  font-size: 1.55rem;
+  background: repeating-linear-gradient(
+    180deg,
+    #8b5a32 0 10px,
+    #7a4c28 10px 12px,
+    #9a6840 12px 20px
+  );
+  box-shadow:
+    inset 0 3px 0 #c49a68,
+    inset 0 -4px 0 #4a2a14,
+    0 0 0 4px #2a160c,
+    0 6px 0 #1a0e08;
+}
+
+.ordmagi-svara:hover:not(:disabled),
+.ordmagi-rensa:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.ordmagi-svara:active:not(:disabled),
+.ordmagi-rensa:active:not(:disabled) {
+  transform: translateY(5px);
+  box-shadow:
+    inset 0 5px 0 #b6f0c4,
+    inset 0 -3px 0 #1d5c30,
+    0 0 0 4px #143c20,
+    0 2px 0 #0c2414;
+}
+
+.ordmagi-rensa:active:not(:disabled) {
+  box-shadow:
+    inset 0 3px 0 #c49a68,
+    inset 0 -2px 0 #4a2a14,
+    0 0 0 4px #2a160c,
+    0 2px 0 #1a0e08;
+}
+
+.ordmagi-svara:disabled,
+.ordmagi-rensa:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.ordmagi-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+.ordmagi-tiles {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  width: 96%;
+}
+
+.ordmagi-tile {
+  min-height: 56px;
+  padding: 10px 18px;
+  border: 0;
+  cursor: pointer;
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: #2a160c;
+  background: #f3e4c4;
+  box-shadow:
+    inset 0 3px 0 #fff6e4,
+    inset 0 -4px 0 #c4a06a,
+    0 0 0 4px #6b4326,
+    0 5px 0 #24140c;
+}
+
+.ordmagi-tile:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+
+.ordmagi-tile:active:not(:disabled) {
+  transform: translateY(4px);
+  box-shadow:
+    inset 0 3px 0 #fff6e4,
+    inset 0 -2px 0 #c4a06a,
+    0 0 0 4px #6b4326,
+    0 1px 0 #24140c;
+}
+
+.ordmagi-tile:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.ordmagi-hint {
+  margin-top: 4px;
+  padding: 12px 22px;
+  font-size: 1.15rem;
+}
+
+.ordmagi-hint-text {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #6b3a12;
+}
+
+.ordmagi-feedback {
+  min-height: 1.4em;
+  font-size: 1.2rem;
+  font-weight: 900;
+}
+
+.ordmagi-feedback.is-success {
+  color: #245028;
+}
+
+.ordmagi-feedback.is-error {
+  color: #8a2418;
+}
+
+.ordmagi-status-icon {
+  font-size: 3.4rem;
+  line-height: 1;
+}
+
+.ordmagi-status-title {
+  font-size: clamp(1.8rem, 3.4vw, 2.6rem);
+  font-weight: 900;
+  color: #245028;
+}
+
+.ordmagi-status-copy {
+  max-width: 34ch;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #6b3a12;
+}
+
+@media (max-width: 900px) {
+  .ordmagi-stage {
+    width: 96vw;
+    height: 96vh;
+    padding: 8px;
+  }
+  .ordmagi-body {
+    flex-direction: column-reverse;
+    align-items: center;
+  }
+  .ordmagi-board {
+    width: 94%;
+  }
+  .ordmagi-npc {
+    width: 150px;
+    margin: 0 0 -10px;
+  }
+  .ordmagi-hud-title {
+    font-size: 1.25rem;
+    padding: 8px 14px;
+  }
+  .ordmagi-puzzle {
+    font-size: 2.3rem;
   }
 }

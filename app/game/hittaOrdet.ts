@@ -5,6 +5,7 @@ export interface WordQuestion {
 }
 
 export interface WordChallengesPayload {
+  challenges: WordQuestion[];
   questions: WordQuestion[];
   source: "ai" | "fallback";
 }
@@ -30,7 +31,10 @@ export function parseWordChallenges(data: unknown): WordQuestion[] | null {
     return null;
   }
 
-  const questions = (data as { questions?: unknown }).questions;
+  const payload = data as { questions?: unknown; challenges?: unknown };
+  const questions = Array.isArray(payload.challenges)
+    ? payload.challenges
+    : payload.questions;
   if (!Array.isArray(questions) || questions.length < 5) {
     return null;
   }

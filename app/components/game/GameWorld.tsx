@@ -12,12 +12,14 @@ interface GameWorldProps {
   coins: number;
   initialPlayerPos?: Position;
   ordLevel1Complete?: boolean;
+  ordLevel2Complete?: boolean;
+  ordLevel3Complete?: boolean;
   mathLevel1Complete?: boolean;
   mathLevel2Complete?: boolean;
   mathLevel3Complete?: boolean;
   onTeleport: (targetWorld: WorldId, targetSpawn?: Position) => void;
   onStartMattemagi: (mode?: "addition" | "subtraction" | "mixed") => void;
-  onStartOrdmagi?: () => void;
+  onStartOrdmagi?: (mode?: "hitta_ordet" | "saknade_bokstaver" | "bygg_meningen") => void;
 }
 
 const OAK_BASE_WIDTH = 112;
@@ -56,6 +58,13 @@ const MATTEHUSET_VISUAL_W = 235;
 const MATTEHUSET_DOOR_X = 615;
 const MATTEHUSET_DOOR_Y = 305;
 const MATTEHUSET_DOOR_FRAC_Y = 0.76;
+const ORDHUSET_SRC = "/assets/hemgarden/ordhuset.png";
+const ORDHUSET_ASPECT = 1536 / 1024;
+const ORDHUSET_VISUAL_W = 248;
+const ORDHUSET_DOOR_X = 615;
+const ORDHUSET_DOOR_Y = 305;
+const ORDHUSET_DOOR_FRAC_X = 678 / 1536;
+const ORDHUSET_DOOR_FRAC_Y = 829 / 1024;
 const MATTELAND_PATH_SPINE = `M 130 302 L 498 302 C 508 330 555 345 615 345`;
 const MATTELAND_PATH_Y = 302;
 const MATTELAND_COBBLE_COLORS = [
@@ -184,6 +193,57 @@ function buildMattelandGrassNubs() {
 const MATTELAND_COBBLES = buildMattelandCobbles();
 const MATTELAND_PATH_GRASS_NUBS = buildMattelandGrassNubs();
 
+const ORDLAND_PATH_SPINE = `M 130 302 L 622 308`;
+const ORDLAND_PATH_Y = 302;
+
+function buildOrdlandCobbles(): MattelandCobble[] {
+  const stones: MattelandCobble[] = [];
+  let i = 0;
+  const add = (x: number, y: number) => {
+    const h0 = mattelandHash(i);
+    const h1 = mattelandHash(i + 1);
+    const h2 = mattelandHash(i + 2);
+    const h3 = mattelandHash(i + 3);
+    i += 4;
+    stones.push({
+      x: x + (h0 - 0.5) * 2.4,
+      y: y + (h1 - 0.5) * 1.8,
+      w: 7 + h2 * 4,
+      h: 5 + h3 * 2.6,
+      r: 1.6,
+      fill: MATTELAND_COBBLE_COLORS[Math.floor(h0 * MATTELAND_COBBLE_COLORS.length)],
+    });
+  };
+
+  for (let x = 136; x <= 618; x += 11) {
+    const stagger = (Math.floor(x / 11) % 2) * 4;
+    add(x, ORDLAND_PATH_Y - 13 + stagger * 0.05);
+    add(x + 3, ORDLAND_PATH_Y - 2);
+    add(x + 1, ORDLAND_PATH_Y + 9 - stagger * 0.05);
+  }
+  return stones;
+}
+
+function buildOrdlandGrassNubs() {
+  const nubs: { x: number; y: number; w: number; h: number }[] = [];
+  let i = 80;
+  for (let x = 142; x <= 600; x += 18) {
+    const h = mattelandHash(i++);
+    const top = h > 0.35;
+    nubs.push({
+      x: x + (mattelandHash(i) - 0.5) * 6,
+      y: top ? ORDLAND_PATH_Y - 24 : ORDLAND_PATH_Y + 16,
+      w: 3 + mattelandHash(i + 1) * 4,
+      h: 2 + mattelandHash(i + 2) * 3,
+    });
+    i += 3;
+  }
+  return nubs;
+}
+
+const ORDLAND_COBBLES = buildOrdlandCobbles();
+const ORDLAND_PATH_GRASS_NUBS = buildOrdlandGrassNubs();
+
 /** Visual-only pine trunks (bottom-center). Does not affect gameplay. */
 const HEMGARDEN_PINES: { x: number; y: number; width: number }[] = [
   { x: 788, y: 28, width: 96 },
@@ -270,29 +330,50 @@ function applyMattehusetProgress(
 
 function applyOrdHusetProgress(
   world: WorldConfig,
-  ordLevel1Complete: boolean
+  ordLevel1Complete: boolean,
+  ordLevel2Complete: boolean,
+  ordLevel3Complete: boolean
 ): WorldConfig {
-  if (world.id !== "ordhuset_interior" || !ordLevel1Complete) {
+  if (world.id !== "ordhuset_interior") {
+    return world;
+  }
+  if (!ordLevel1Complete && !ordLevel2Complete && !ordLevel3Complete) {
     return world;
   }
 
   return {
     ...world,
     scenery: world.scenery.map((item) => {
-      if (item.id === "ord_station_pedestal_2") {
+      if (item.id === "ord_station_pedestal_2" && ordLevel1Complete) {
         return { ...item, isLocked: false };
+      }
+      if (item.id === "ord_station_pedestal_3" && ordLevel2Complete) {
+        return { ...item, isLocked: false };
+      }
+      if (item.id === "word_chalkboard" && ordLevel3Complete) {
+        return { ...item, label: "Ordlandet klart!" };
       }
       return item;
     }),
     interactables: world.interactables.map((item) => {
-      if (item.id === "station_saknade_bokstaver") {
+      if (item.id === "station_saknade_bokstaver" && ordLevel1Complete) {
         return {
           ...item,
           label: "Nivå 2: Saknade bokstäver",
-          prompt: "Tryck E för att höra mer",
-          action: "info",
-          infoMessage:
-            "Saknade bokstäver är upplåst, men spelet byggs fortfarande. Kom tillbaka snart! ✨",
+          prompt: "Tryck E för att spela Saknade bokstäver",
+          action: "start_ordmagi",
+          ordMode: "saknade_bokstaver",
+          infoMessage: undefined,
+        };
+      }
+      if (item.id === "station_bygg_meningen" && ordLevel2Complete) {
+        return {
+          ...item,
+          label: "Nivå 3: Bygg meningen",
+          prompt: "Tryck E för att spela Bygg meningen",
+          action: "start_ordmagi",
+          ordMode: "bygg_meningen",
+          infoMessage: undefined,
         };
       }
       return item;
@@ -331,6 +412,8 @@ export default function GameWorld({
   coins,
   initialPlayerPos,
   ordLevel1Complete = false,
+  ordLevel2Complete = false,
+  ordLevel3Complete = false,
   mathLevel1Complete = false,
   mathLevel2Complete = false,
   mathLevel3Complete = false,
@@ -341,11 +424,23 @@ export default function GameWorld({
   const world = useMemo(
     () =>
       applyMattehusetProgress(
-        applyOrdHusetProgress(worldProp, ordLevel1Complete),
+        applyOrdHusetProgress(
+          worldProp,
+          ordLevel1Complete,
+          ordLevel2Complete,
+          ordLevel3Complete
+        ),
         mathLevel1Complete,
         mathLevel2Complete
       ),
-    [worldProp, ordLevel1Complete, mathLevel1Complete, mathLevel2Complete]
+    [
+      worldProp,
+      ordLevel1Complete,
+      ordLevel2Complete,
+      ordLevel3Complete,
+      mathLevel1Complete,
+      mathLevel2Complete,
+    ]
   );
   // Player position and state
   const [playerPos, setPlayerPos] = useState<Position>(
@@ -421,7 +516,7 @@ export default function GameWorld({
     if (item.action === "start_mattemagi") {
       onStartMattemagi(item.mathMode ?? "addition");
     } else if (item.action === "start_ordmagi") {
-      onStartOrdmagi?.();
+      onStartOrdmagi?.(item.ordMode ?? "hitta_ordet");
     } else if (item.action === "teleport" && item.targetWorld) {
       onTeleport(item.targetWorld, item.targetSpawn);
     } else if (item.action === "info") {
@@ -586,6 +681,13 @@ export default function GameWorld({
           </>
         ) : world.id === "mattelandet" ? (
           <MattelandetPaths world={world} />
+        ) : world.id === "ordlandet" ? (
+          <MattelandetPaths
+            world={world}
+            spine={ORDLAND_PATH_SPINE}
+            cobbles={ORDLAND_COBBLES}
+            nubs={ORDLAND_PATH_GRASS_NUBS}
+          />
         ) : (
           world.paths.map((p, idx) => (
             <div
@@ -671,25 +773,33 @@ export default function GameWorld({
           }
 
           if (item.type === "word_house") {
+            const visualWidth = ORDHUSET_VISUAL_W;
+            const visualHeight = visualWidth / ORDHUSET_ASPECT;
+            const visualLeft =
+              ORDHUSET_DOOR_X - visualWidth * ORDHUSET_DOOR_FRAC_X;
+            const visualTop =
+              ORDHUSET_DOOR_Y - visualHeight * ORDHUSET_DOOR_FRAC_Y;
             return (
               <div
                 key={item.id}
-                style={{ left, top, width, height }}
-                className="absolute z-10 pointer-events-none flex flex-col"
+                style={{
+                  left: `${(visualLeft / world.width) * 100}%`,
+                  top: `${(visualTop / world.height) * 100}%`,
+                  width: `${(visualWidth / world.width) * 100}%`,
+                  height: `${(visualHeight / world.height) * 100}%`,
+                }}
+                className="absolute z-10 pointer-events-none bg-transparent"
               >
-                <div className="relative h-[38%] bg-emerald-700 border-2 border-emerald-950 shadow-md [clip-path:polygon(50%_0,100%_100%,0_100%)] flex items-end justify-center pb-0.5">
-                  <span className="text-sm drop-shadow">📖</span>
-                </div>
-                <div className="flex-1 bg-amber-100 border-2 border-amber-900 relative shadow-inner">
-                  <div className="absolute left-1/2 -translate-x-1/2 bottom-0 w-[28%] h-[58%] bg-amber-800 border-x-2 border-t-2 border-amber-950 rounded-t-sm" />
-                  <div className="absolute left-[12%] top-[18%] w-[18%] h-[22%] bg-sky-200 border-2 border-amber-900" />
-                  <div className="absolute right-[12%] top-[18%] w-[18%] h-[22%] bg-sky-200 border-2 border-amber-900" />
-                </div>
-                {item.label ? (
-                  <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-amber-950/80 px-2 py-0.5 text-[10px] font-black text-amber-100">
-                    {item.label}
-                  </div>
-                ) : null}
+                <Image
+                  src={ORDHUSET_SRC}
+                  alt={item.label || "Ordhuset"}
+                  fill
+                  unoptimized
+                  sizes="248px"
+                  draggable={false}
+                  className="object-contain bg-transparent"
+                  style={{ backgroundColor: "transparent" }}
+                />
               </div>
             );
           }
@@ -1105,6 +1215,8 @@ export default function GameWorld({
                   {item.isLocked
                     ? "🔒"
                     : (item.id === "ord_station_pedestal_1" && ordLevel1Complete) ||
+                        (item.id === "ord_station_pedestal_2" && ordLevel2Complete) ||
+                        (item.id === "ord_station_pedestal_3" && ordLevel3Complete) ||
                         (item.id === "station_pedestal_1" && mathLevel1Complete) ||
                         (item.id === "station_pedestal_2" && mathLevel2Complete) ||
                         (item.id === "station_pedestal_3" && mathLevel3Complete)
@@ -1840,10 +1952,17 @@ function HemgardenStonePath({
   );
 }
 
-function MattelandetPaths({ world }: { world: WorldConfig }) {
-  const cobbles = MATTELAND_COBBLES;
-  const nubs = MATTELAND_PATH_GRASS_NUBS;
-
+function MattelandetPaths({
+  world,
+  spine = MATTELAND_PATH_SPINE,
+  cobbles = MATTELAND_COBBLES,
+  nubs = MATTELAND_PATH_GRASS_NUBS,
+}: {
+  world: WorldConfig;
+  spine?: string;
+  cobbles?: MattelandCobble[];
+  nubs?: { x: number; y: number; w: number; h: number }[];
+}) {
   return (
     <svg
       className="absolute inset-0 z-[2] pointer-events-none"
@@ -1853,7 +1972,7 @@ function MattelandetPaths({ world }: { world: WorldConfig }) {
       style={{ imageRendering: "pixelated" }}
     >
       <path
-        d={MATTELAND_PATH_SPINE}
+        d={spine}
         fill="none"
         stroke="#5c5348"
         strokeWidth="46"
@@ -1861,7 +1980,7 @@ function MattelandetPaths({ world }: { world: WorldConfig }) {
         strokeLinejoin="round"
       />
       <path
-        d={MATTELAND_PATH_SPINE}
+        d={spine}
         fill="none"
         stroke="#8a7c6a"
         strokeWidth="38"

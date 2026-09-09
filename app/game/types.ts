@@ -39,6 +39,7 @@ export interface Interactable {
   action?: "teleport" | "start_mattemagi" | "start_ordmagi" | "info";
   infoMessage?: string;
   mathMode?: "addition" | "subtraction" | "mixed";
+  ordMode?: "hitta_ordet" | "saknade_bokstaver" | "bygg_meningen";
 }
 
 export interface SceneryItem {

@@ -5,7 +5,77 @@ import {
   getMathLevelTitle,
   getMathQuestions,
   type MathMode,
+  type MathQuestion,
 } from "@/app/game/mathQuestions";
+import { buildLocalMathStory } from "@/app/game/mathStoryFallback";
+
+const storyRequestCache = new Map<
+  string,
+  Promise<{ story: string; source: string }>
+>();
+
+function storyCacheKey(question: MathQuestion): string {
+  return `${question.num1}:${question.operator}:${question.num2}:${question.answer}`;
+}
+
+function requestMathStory(question: MathQuestion) {
+  const key = storyCacheKey(question);
+  const cached = storyRequestCache.get(key);
+  if (cached) {
+    return cached;
+  }
+
+  const request = fetch("/api/math-stories", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      num1: question.num1,
+      num2: question.num2,
+      operator: question.operator,
+      answer: question.answer,
+    }),
+  })
+    .then(async (response) => {
+      const data = (await response.json()) as {
+        story?: string | null;
+        source?: string;
+      };
+      const story =
+        typeof data.story === "string" && data.story.trim()
+          ? data.story.trim()
+          : buildLocalMathStory(
+              question.num1,
+              question.num2,
+              question.operator
+            );
+      console.info("[mattemagi-story]", {
+        key,
+        source: data.source ?? "fallback",
+        story,
+      });
+      return { story, source: data.source ?? "fallback" };
+    })
+    .catch((error) => {
+      const story = buildLocalMathStory(
+        question.num1,
+        question.num2,
+        question.operator
+      );
+      console.warn("[mattemagi-story]", {
+        key,
+        source: "fallback",
+        reason: error instanceof Error ? error.message : "fetch-failed",
+        story,
+      });
+      return { story, source: "fallback" };
+    });
+
+  storyRequestCache.set(key, request);
+  return request;
+}
+
+const STORY_QUESTION_INDICES = new Set([1, 3]);
+const STARTING_HEARTS = 3;
 
 interface MattemagiLevelProps {
   initialStars: number;
@@ -33,7 +103,7 @@ export default function MattemagiLevel({
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswer, setUserAnswer] = useState("");
   const [stars, setStars] = useState(initialStars);
-  const [hearts, setHearts] = useState(3);
+  const [hearts, setHearts] = useState(STARTING_HEARTS);
   const [feedback, setFeedback] = useState<{
     type: "success" | "error";
     message: string;
@@ -42,20 +112,76 @@ export default function MattemagiLevel({
   const [isLoadingHint, setIsLoadingHint] = useState(false);
   const [hintCache, setHintCache] = useState<Record<number, string>>({});
   const [isCompleted, setIsCompleted] = useState(false);
+  const [isFailed, setIsFailed] = useState(false);
   const [isAdvancing, setIsAdvancing] = useState(false);
+  const [stories, setStories] = useState<
+    Record<number, { status: "loading" | "ready"; text?: string }>
+  >({});
 
   const inputRef = useRef<HTMLInputElement>(null);
 
   const currentQ = questions[currentQuestionIndex];
+  const isStorySlot = STORY_QUESTION_INDICES.has(currentQuestionIndex);
+  const currentStory = stories[currentQuestionIndex];
+  const isStoryLoading = isStorySlot && currentStory?.status !== "ready";
+  const storyText = isStorySlot
+    ? currentStory?.status === "ready" && currentStory.text
+      ? currentStory.text
+      : currentQ
+        ? buildLocalMathStory(currentQ.num1, currentQ.num2, currentQ.operator)
+        : undefined
+    : undefined;
 
   useEffect(() => {
-    if (!isCompleted && !isAdvancing && currentQ) {
+    if (questions.length === 0) {
+      return;
+    }
+
+    let cancelled = false;
+    const storyIndexes = questions
+      .map((_, index) => index)
+      .filter((index) => STORY_QUESTION_INDICES.has(index));
+
+    const loadStory = async (index: number) => {
+      const question = questions[index];
+      const data = await requestMathStory(question);
+      setStories((prev) => ({
+        ...prev,
+        [index]: { status: "ready", text: data.story },
+      }));
+    };
+
+    const loadAllStories = async () => {
+      for (const index of storyIndexes) {
+        if (cancelled) {
+          return;
+        }
+        await loadStory(index);
+      }
+    };
+
+    void loadAllStories();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [questions]);
+
+  useEffect(() => {
+    if (!isCompleted && !isFailed && !isAdvancing && currentQ && !isStoryLoading) {
       inputRef.current?.focus();
     }
-  }, [currentQuestionIndex, isCompleted, isAdvancing, currentQ]);
+  }, [
+    currentQuestionIndex,
+    isCompleted,
+    isFailed,
+    isAdvancing,
+    currentQ,
+    isStoryLoading,
+  ]);
 
   const handleToggleHint = async () => {
-    if (!currentQ) {
+    if (!currentQ || isStoryLoading || isFailed) {
       return;
     }
     if (showHint) {
@@ -78,6 +204,7 @@ export default function MattemagiLevel({
           num1: currentQ.num1,
           num2: currentQ.num2,
           operator: currentQ.operator,
+          story: Boolean(storyText),
         }),
       });
 
@@ -103,7 +230,15 @@ export default function MattemagiLevel({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (isAdvancing || !currentQ || !userAnswer.trim()) return;
+    if (
+      isAdvancing ||
+      isFailed ||
+      isStoryLoading ||
+      !currentQ ||
+      !userAnswer.trim()
+    ) {
+      return;
+    }
 
     const parsedAnswer = parseInt(userAnswer.trim(), 10);
 
@@ -130,22 +265,42 @@ export default function MattemagiLevel({
         }
       }, 800);
     } else {
-      let newHearts = hearts - 1;
-      let extraMessage = "";
+      const remainingHearts = hearts - 1;
+      setUserAnswer("");
 
-      if (newHearts <= 0) {
-        newHearts = 3;
-        extraMessage = " Hjärtana tog slut, men magin fyller på dem igen! ✨";
+      if (remainingHearts <= 0) {
+        setHearts(0);
+        setStars(initialStars);
+        setFeedback(null);
+        setShowHint(false);
+        setIsLoadingHint(false);
+        setIsAdvancing(false);
+        setIsFailed(true);
+        return;
       }
 
-      setHearts(newHearts);
+      setHearts(remainingHearts);
       setFeedback({
         type: "error",
-        message: `Inte riktigt, men du var nära! Tänk efter och försök igen! 💪${extraMessage}`,
+        message:
+          "Inte riktigt, men du var nära! Tänk efter och försök igen! 💪",
       });
-      setUserAnswer("");
       inputRef.current?.focus();
     }
+  };
+
+  const handleRetryLevel = () => {
+    setIsFailed(false);
+    setIsCompleted(false);
+    setIsAdvancing(false);
+    setHearts(STARTING_HEARTS);
+    setCurrentQuestionIndex(0);
+    setUserAnswer("");
+    setFeedback(null);
+    setShowHint(false);
+    setIsLoadingHint(false);
+    setHintCache({});
+    setStars(initialStars);
   };
 
   const nudgeAnswer = (delta: number) => {
@@ -157,6 +312,8 @@ export default function MattemagiLevel({
 
   const ladybugLine = !currentQ
     ? "Nyckelpigan blandar tal... ✨"
+    : isStoryLoading
+    ? "Jag trollar fram\nen mattegåta... ✨"
     : isLoadingHint
     ? "Nyckelpigan tänker... ✨"
     : feedback?.type === "success"
@@ -165,7 +322,9 @@ export default function MattemagiLevel({
         ? "Nästan! Försök en gång till! ❤️"
         : showHint
           ? hintCache[currentQuestionIndex] || currentQ.fallbackHint
-          : currentQ.operator === "-"
+          : storyText
+            ? "Läs gåtan\noch räkna! ❤️"
+            : currentQ.operator === "-"
             ? "Du klarar det!\nRäkna hur många\nsom blir kvar! ❤️"
             : "Du klarar det!\nRäkna äpplena\nså ser du! ❤️";
 
@@ -204,7 +363,9 @@ export default function MattemagiLevel({
       <div className="mattemagi-stage">
         <VineFrame />
 
-        {isCompleted ? (
+        {isFailed ? (
+          <FailureBoard onRetry={handleRetryLevel} />
+        ) : isCompleted ? (
           <CompletionBoard
             stars={stars}
             levelTitle={levelTitle}
@@ -279,34 +440,60 @@ export default function MattemagiLevel({
               </div>
 
               <div
-                className={`mattemagi-board ${feedback?.type === "success" ? "is-correct" : ""}`}
+                className={`mattemagi-board ${feedback?.type === "success" ? "is-correct" : ""} ${
+                  isStorySlot ? "is-story" : ""
+                }`}
               >
                 <BoardVines />
                 {feedback?.type === "success" ? <SparkleBurst /> : null}
                 <div className="mattemagi-parchment">
-                  <div className="mattemagi-kicker">✨ Trolla fram rätt svar!</div>
+                  {isStorySlot ? (
+                    isStoryLoading ? (
+                    <>
+                      <div className="mattemagi-wood mattemagi-story-heading">
+                        ✨ Nyckelpigans magiska mattegåta
+                      </div>
+                      <p className="mattemagi-story mattemagi-story-loading">
+                        ✨ Nyckelpigan trollar fram en mattegåta...
+                      </p>
+                    </>
+                    ) : (
+                    <>
+                      <div className="mattemagi-wood mattemagi-story-heading">
+                        ✨ Nyckelpigans magiska mattegåta
+                      </div>
+                      <p className="mattemagi-story">{storyText}</p>
+                    </>
+                    )
+                  ) : (
+                    <>
+                      <div className="mattemagi-kicker">✨ Trolla fram rätt svar!</div>
 
-                  <div className="mattemagi-objects">
-                    <div className="mattemagi-obj-group">
-                      {Array.from({ length: currentQ.num1 }).map((_, i) => (
-                        <span key={`a-${i}`}>{currentQ.emoji}</span>
-                      ))}
-                    </div>
-                    <span className="mattemagi-eq-op font-black">{currentQ.operator}</span>
-                    <div className="mattemagi-obj-group">
-                      {Array.from({ length: currentQ.num2 }).map((_, i) => (
-                        <span key={`b-${i}`}>{currentQ.emoji}</span>
-                      ))}
-                    </div>
-                  </div>
+                      <div className="mattemagi-objects">
+                        <div className="mattemagi-obj-group">
+                          {Array.from({ length: currentQ.num1 }).map((_, i) => (
+                            <span key={`a-${i}`}>{currentQ.emoji}</span>
+                          ))}
+                        </div>
+                        <span className="mattemagi-eq-op font-black">
+                          {currentQ.operator}
+                        </span>
+                        <div className="mattemagi-obj-group">
+                          {Array.from({ length: currentQ.num2 }).map((_, i) => (
+                            <span key={`b-${i}`}>{currentQ.emoji}</span>
+                          ))}
+                        </div>
+                      </div>
 
-                  <div className="mattemagi-eq">
-                    <span>{currentQ.num1}</span>
-                    <span className="mattemagi-eq-op">{currentQ.operator}</span>
-                    <span>{currentQ.num2}</span>
-                    <span className="mattemagi-eq-op">=</span>
-                    <span>?</span>
-                  </div>
+                      <div className="mattemagi-eq">
+                        <span>{currentQ.num1}</span>
+                        <span className="mattemagi-eq-op">{currentQ.operator}</span>
+                        <span>{currentQ.num2}</span>
+                        <span className="mattemagi-eq-op">=</span>
+                        <span>?</span>
+                      </div>
+                    </>
+                  )}
 
                   <form onSubmit={handleSubmit} className="mattemagi-controls">
                     <div
@@ -321,7 +508,7 @@ export default function MattemagiLevel({
                         value={userAnswer}
                         onChange={(e) => setUserAnswer(e.target.value)}
                         placeholder="?"
-                        disabled={isAdvancing}
+                        disabled={isAdvancing || isStoryLoading}
                         aria-label="Ditt svar"
                         className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       />
@@ -329,7 +516,7 @@ export default function MattemagiLevel({
                         <button
                           type="button"
                           aria-label="Öka talet"
-                          disabled={isAdvancing}
+                          disabled={isAdvancing || isStoryLoading}
                           onClick={() => nudgeAnswer(1)}
                         >
                           ▲
@@ -337,7 +524,7 @@ export default function MattemagiLevel({
                         <button
                           type="button"
                           aria-label="Minska talet"
-                          disabled={isAdvancing}
+                          disabled={isAdvancing || isStoryLoading}
                           onClick={() => nudgeAnswer(-1)}
                         >
                           ▼
@@ -348,7 +535,7 @@ export default function MattemagiLevel({
                     <button
                       type="submit"
                       className="mattemagi-svara"
-                      disabled={isAdvancing || !userAnswer.trim()}
+                      disabled={isAdvancing || isStoryLoading || !userAnswer.trim()}
                     >
                       Svara ➜
                     </button>
@@ -364,6 +551,7 @@ export default function MattemagiLevel({
                     type="button"
                     className="mattemagi-wood mattemagi-hint"
                     onClick={handleToggleHint}
+                    disabled={isStoryLoading}
                   >
                     💡 Fråga nyckelpigan om en ledtråd!
                   </button>
@@ -372,6 +560,26 @@ export default function MattemagiLevel({
             </div>
           </>
         )}
+      </div>
+    </div>
+  );
+}
+
+function FailureBoard({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div className="mattemagi-body" style={{ alignItems: "center" }}>
+      <div className="mattemagi-board" style={{ width: "72%", height: "78%" }}>
+        <div className="mattemagi-parchment">
+          <div style={{ fontSize: "4rem" }}>❤️</div>
+          <div className="mattemagi-wood mattemagi-hud-sub">Försök igen</div>
+          <h2 className="mattemagi-eq" style={{ fontSize: "2.4rem" }}>
+            Åh nej! Hjärtana tog slut ❤️
+          </h2>
+          <p className="mattemagi-kicker">Försök igen!</p>
+          <button type="button" className="mattemagi-svara" onClick={onRetry}>
+            Försök igen
+          </button>
+        </div>
       </div>
     </div>
   );

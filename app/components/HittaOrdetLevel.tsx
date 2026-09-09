@@ -7,6 +7,11 @@ import {
   parseWordChallenges,
   type WordQuestion,
 } from "@/app/game/hittaOrdet";
+import {
+  OrdCompleteScreen,
+  OrdLevelFrame,
+  OrdLoadingScreen,
+} from "@/app/components/OrdLevelFrame";
 
 interface HittaOrdetLevelProps {
   initialStars: number;
@@ -29,6 +34,8 @@ function loadWordChallenges(): Promise<LoadedChallenges> {
     const response = await fetch("/api/word-challenges", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      cache: "no-store",
+      body: JSON.stringify({ round: Date.now() }),
     });
 
     if (!response.ok) {
@@ -154,73 +161,39 @@ export default function HittaOrdetLevel({
   };
 
   if (isMagicLoad || !questions || !currentQ) {
-    return (
-      <div className="w-full max-w-xl rounded-3xl border-4 border-emerald-800 bg-amber-50 p-8 text-center shadow-2xl">
-        <div className="text-5xl">🐞</div>
-        <h2 className="mt-4 text-2xl font-black text-emerald-900">
-          Nyckelpigan trollar fram nya ord... ✨
-        </h2>
-        <p className="mt-3 text-lg font-semibold text-amber-900">
-          Snart är ordgåtorna klara!
-        </p>
-      </div>
-    );
+    return <OrdLoadingScreen />;
   }
 
   if (isCompleted) {
     return (
-      <div className="w-full max-w-xl rounded-3xl border-4 border-emerald-800 bg-amber-50 p-8 text-center shadow-2xl">
-        <div className="text-5xl">📖</div>
-        <h2 className="mt-3 text-3xl font-black text-emerald-900">Nivå 1 klarad!</h2>
-        <p className="mt-2 text-lg font-semibold text-amber-900">
-          Du hittade alla orden. Saknade bokstäver är nu upplåst i Ordhuset!
-        </p>
-        <p className="mt-3 text-xl font-black text-amber-700">⭐ {stars} stjärnor totalt</p>
-        <button
-          type="button"
-          className="mt-6 rounded-2xl bg-emerald-600 px-6 py-3 text-lg font-black text-white shadow-lg hover:bg-emerald-500"
-          onClick={() => onBackToMap(stars, true)}
-        >
-          Tillbaka till Ordhuset
-        </button>
-      </div>
+      <OrdCompleteScreen
+        title="Nivå 1 klarad!"
+        message="Du hittade alla orden. Saknade bokstäver är nu upplåst i Ordhuset!"
+        stars={stars}
+        onBack={() => onBackToMap(stars, true)}
+      />
     );
   }
 
   return (
-    <div className="w-full max-w-xl rounded-3xl border-4 border-emerald-800 bg-amber-50 p-6 shadow-2xl sm:p-8">
-      <div className="flex items-start justify-between gap-3">
-        <button
-          type="button"
-          className="rounded-xl bg-amber-800 px-4 py-2 font-black text-amber-50"
-          onClick={() => onBackToMap(stars, false)}
-        >
-          ← Tillbaka
-        </button>
-        <div className="text-center">
-          <h1 className="text-2xl font-black text-emerald-900">Hitta ordet</h1>
-          <p className="text-sm font-bold text-amber-800">
-            Fråga {currentQuestionIndex + 1} av {questions.length}
-          </p>
-        </div>
-        <div className="text-right text-lg font-black">
-          <div>{"❤️".repeat(hearts)}{"🤍".repeat(3 - hearts)}</div>
-          <div>⭐ {stars}</div>
-        </div>
-      </div>
+    <OrdLevelFrame
+      title="Hitta ordet"
+      progressLabel={`Fråga ${currentQuestionIndex + 1} av ${questions.length}`}
+      hearts={hearts}
+      stars={stars}
+      ladybugLine={
+        usedAiRiddles
+          ? "Nyckelpigan trollade fram en magisk ordgåta!"
+          : "En ny ordgåta har trollats fram!"
+      }
+      onBack={() => onBackToMap(stars, false)}
+      feedback={feedback}
+    >
+      <p className="ordmagi-kicker">✨ Hitta ordet</p>
+      <p className="ordmagi-clue">{currentQ.clue}</p>
 
-      <p className="mt-4 text-center text-sm font-black text-emerald-800">
-        {usedAiRiddles
-          ? "✨ Nyckelpigans magiska ordgåta"
-          : "✨ En ny ordgåta har trollats fram!"}
-      </p>
-
-      <p className="mt-3 rounded-2xl bg-white px-5 py-6 text-center text-xl font-bold text-emerald-950 shadow-inner">
-        {currentQ.clue}
-      </p>
-
-      <form onSubmit={handleSubmit} className="mt-6 flex flex-col items-center gap-3">
-        <label className="w-full text-center text-sm font-bold text-amber-900">
+      <form onSubmit={handleSubmit} className="ordmagi-form">
+        <label className="ordmagi-label">
           Skriv ordet
           <input
             ref={inputRef}
@@ -229,40 +202,27 @@ export default function HittaOrdetLevel({
             value={userAnswer}
             disabled={isAdvancing}
             onChange={(e) => setUserAnswer(e.target.value)}
-            className="mt-2 w-full rounded-2xl border-4 border-emerald-800 bg-white px-4 py-3 text-center text-2xl font-black text-emerald-950"
+            className="ordmagi-input"
             aria-label="Ditt ord"
           />
         </label>
         <button
           type="submit"
           disabled={isAdvancing || !userAnswer.trim()}
-          className="rounded-2xl bg-emerald-600 px-8 py-3 text-xl font-black text-white shadow-lg enabled:hover:bg-emerald-500 disabled:opacity-40"
+          className="ordmagi-svara"
         >
           Svara ➜
         </button>
       </form>
 
-      {feedback && (
-        <p
-          role="alert"
-          className={`mt-4 text-center text-lg font-black ${
-            feedback.type === "success" ? "text-emerald-700" : "text-rose-700"
-          }`}
-        >
-          {feedback.message}
-        </p>
-      )}
-
       <button
         type="button"
-        className="mt-5 w-full rounded-xl bg-amber-200 px-4 py-2 font-bold text-amber-950"
+        className="ordmagi-wood ordmagi-hint"
         onClick={() => setShowHint((prev) => !prev)}
       >
         {showHint ? "Dölj ledtråd" : "💡 Visa en ledtråd"}
       </button>
-      {showHint && (
-        <p className="mt-2 text-center font-semibold text-amber-900">{currentQ.hint}</p>
-      )}
-    </div>
+      {showHint ? <p className="ordmagi-hint-text">{currentQ.hint}</p> : null}
+    </OrdLevelFrame>
   );
 }
